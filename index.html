@@ -6,5 +6,74 @@
         <title>krypton</title>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="./styles.css">
+        <script src="https://unpkg.com/lucide@latest"></script>
     </head>
+    <body>
+        <div class="maintainer">
+            <div class="tbar" id="tabBar">
+                <div class="tab active" data-tab-id="1">
+                    <div class="tab-fav">
+                        <i data-lucide="globe"></i>
+                    </div>
+                    <span class="tab-tl">New Tab</span>
+                    <div class="tab-cl">
+                        <i data-lucide="x"></i>
+                    </div>
+                </div>
+                <div class="nt-btn" id="ntBtn">
+                    <i data-lucide="plus" style="width: 14px; height: 14px;color: #808080;"></i>
+                </div>
+            </div>
+            <div class="address-bar">
+                <button class="nav-btn" id="backBtn" disabled>
+                    <i data-lucide="arrow-left"></i>
+                </button>
+                <button class="nav-btn" id="fwBtn" disabled>
+                    <i data-lucide="arrow-right"></i>
+                </button>
+                <button class="nav-btn" id="refBtn">
+                    <i data-lucide="rotate-cw"></i>
+                </button>
+                <div class="url-intainer">
+                    <div class="url-icon">
+                        <i data-lucide="lock"></i>
+                    </div>
+                    <input type="text" class="url-input" placeholder="Search or enter address" id="urlInput">
+                </div>
+                <button class="nav-btn" id="bmBtn">
+                    <i data-lucide="star"></i>
+                </button>
+                <button class="nav-btn" id="menuBtn">
+                    <i data-lucide="more-vertical"></i>
+                </button>
+            </div>
+            <div class="c-area">
+                <div class="wscreen">
+                    <h1>welcome to krypton.</h1>
+                    <p>placeholder, subtitle</p>
+                    <div class="shortcuts">
+                        <div class="shortcut">
+                            <div class="s-icon">
+                                <i data-lucide="gamepad-2"></i>
+                            </div>
+                            <div class="s-title">games</div>
+                        </div>
+                        <div class="shortcut">
+                            <div class="s-icon">
+                                <i data-lucide="layout-grid"></i>
+                            </div>
+                            <div class="s-title">apps</div>
+                        </div>
+                        <div class="shortcut">
+                            <div class="s-icon">
+                                <i data-lucide="settings"></i>
+                            </div>
+                            <div class="s-title">settings</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script src="script.js"></script>
+    </body>
 </html>
