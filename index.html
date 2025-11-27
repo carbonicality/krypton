@@ -6,6 +6,7 @@
         <title>krypton</title>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="./styles.css">
+        <script src="https://unpkg.com/lucide@latest"></script>
     </head>
     <body>
         <div class="maintainer">
@@ -73,41 +74,6 @@
                 </div>
             </div>
         </div>
-        <script src="https://unpkg.com/lucide@latest"></script>
-        <script src="script.js"></script>
-        <script src="https://cdn.jsdelivr.net/gh/soap-phia/tinyjet@latest/tinyjet/scramjet.all.js"></script>
-        <script type="module">
-            import * as BareMux from "https://cdn.jsdelivr.net/npm/@mercuryworkshop/bare-mux/dist/index.mjs";
-            async function initProxy() {
-                if (!('serviceWorker' in navigator)) {
-                    alert('uh oh - SW isnt here? is the page running in a local file?');
-                    return;
-                }
-                const connection = new BareMux.BareMuxConnection("/bareworker.js");
-                console.log("baremux connection created");
-                await connection.setTransport("https://cdn.jsdelivr.net/npm/@mercuryworkshop/epoxy-transport/dist/index.mjs", [{
-                    wisp: "wss://gointospace.app/wisp/"
-                }]);
-                console.log("baremux wisp transport set");
-                await navigator.serviceWorker.register("/sw.js");
-                console.log("sw registered");
-                await navigator.serviceWorker.ready;
-                console.log("sw ready");
-                const ScramjetController = (await import("https://cdn.jsdelivr.net/gh/soap-phia/tinyjet@latest/tinyjet/scramjet.all.js")).ScramjetController || window.$scramjetLoadController().ScramjetController;
-                const scramjet = new ScramjetController({
-                    prefix: "/scramjet/",
-                    codec: "xor"
-                });
-                await scramjet.init();
-                console.log("scramjet initialised");
-                window.scramjet = scramjet;
-                window.proxyReady = true;
-                console.log("everything is ready");
-            }
-            initProxy().catch(e => {
-                console.error("init failed ", e);
-                console.error("full error: ", e.stack);
-            });
-        </script>
+        <script src="script.js"></script>        
     </body>
 </html>
