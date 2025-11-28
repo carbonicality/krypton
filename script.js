@@ -123,6 +123,13 @@ document.getElementById('refBtn').addEventListener('click', () => {
     setTimeout(() => {
         icon.style.transform = '';
     },500);
+    const activeTab = document.querySelector('.tab.active');
+    if (activeTab) {
+        const tabId = activeTab.dataset.tabId;
+        if (tabs[tabId] && tabs[tabId].iframe) {
+            tabs[tabId].iframe.src = tabs[tabId].iframe.src;
+        }
+    }
 });
 
 document.getElementById('urlInput').addEventListener('keypress', (e) => {
