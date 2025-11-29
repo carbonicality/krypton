@@ -230,7 +230,17 @@ body {
 .url-icon {
     width: 14px;
     height: 14px;
-    color: #808080;
+    color: #60a5fa;
+    transition: color 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.url-icon svg {
+    width: 14px;
+    height: 14px;
+    display: block;
 }
 
 .url-input {

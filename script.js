@@ -60,6 +60,34 @@ document.getElementById('ntBtn').addEventListener('click', () => {
     showWscreen();
 });
 
+function updLIC(url) {
+    const urlIcon = document.querySelector('.url-icon');
+    if (!url) {
+        urlIcon.innerHTML = '<i data-lucide="atom"></i>';
+        urlIcon.style.color = '#60a5fa';
+        lucide.createIcons();
+        return;
+    }
+    try {
+        const urlObj = new URL(url);
+        if (urlObj.protocol === 'https:') {
+            urlIcon.innerHTML = '<i data-lucide="lock"></i>';
+            urlIcon.style.color = '#22c55e';
+        } else if (urlObj.protocol === 'http:') {
+            urlIcon.innerHTML = '<i data-lucide="unlock"></i>';
+            urlIcon.style.color = '#eb4034';
+        } else {
+            urlIcon.innerHTML = '<i data-lucide="ellipsis"></i>';
+            urlIcon.style.color = '#60a5fa';
+        }
+        lucide.createIcons();
+    } catch (e) {
+        urlIcon.innerHTML = '<i data-lucide="atom"></i>';
+        urlIcon.style.color = '#60a5fa';
+        lucide.createIcons();
+    }
+}
+
 function swTab(tabId) {
     const cArea = document.querySelector('.c-area');
     const wScreen = document.querySelector('.wscreen');
@@ -77,12 +105,17 @@ function swTab(tabId) {
             urlDisplay.innerHTML = formatUrl(tabs[tabId].url);
             urlDisplay.style.display = 'block';
             urlInput.style.display = 'none';
+            updLIC(tabs[tabId].url);
         }
         startURLM(tabs[tabId].iframe, tabId);
         updNavBtns();
     } else {
         wScreen.style.display = 'block';
         document.getElementById('urlInput').value = '';
+        urlDisplay.style.display = 'none';
+        urlInput.style.display = 'block';
+        updLIC(null);
+        updNavBtns();
     }
 }
 
@@ -95,6 +128,14 @@ function showWscreen() {
     document.getElementById('urlInput').value = '';
     urlDisplay.style.display = 'none';
     urlInput.style.display = 'block';
+    const activeTab = document.querySelector('.tab.active');
+    if (activeTab) {
+        const tabId = activeTab.dataset.tabId;
+        if (tabs[tabId]) {
+            tabs[tabId].url = null;
+        }
+    }
+    updLIC(null);
     if (urlUpdInterval) {
         clearInterval(urlUpdInterval);
     }
@@ -112,10 +153,13 @@ function startURLM(iframe,tabId) {
                 if (tabs[tabId] && tabs[tabId].url !== decodedUrl) {
                     tabs[tabId].isFirst = false;
                 }
-                document.getElementById('urlInput').value = decodedUrl;
-                if (document.getElementById('urlInput').style.display === 'none') {
-                    urlDisplay.innerHTML = formatUrl(decodedUrl);
+                if (document.activeElement !== urlInput) {
+                    document.getElementById('urlInput').value = decodedUrl;
+                    if (document.getElementById('urlInput').style.display === 'none') {
+                        urlDisplay.innerHTML = formatUrl(decodedUrl);
+                    }
                 }
+                updLIC(decodedUrl);
                 tabs[tabId].url = decodedUrl;
                 try {
                     let urlObj = new URL(decodedUrl);
@@ -130,6 +174,10 @@ function startURLM(iframe,tabId) {
             }
         } catch (e) {
             // cors error most likely, expected
+            //regardless, try to upd based on stored url
+            if (tabs[tabId] && tabs[tabId].url) {
+                updLIC(tabs[tabId].url);
+            }
         }
     },500);
 }
@@ -208,7 +256,7 @@ function updNavBtns() {
         const tabId = activeTab.dataset.tabId;
         if (tabs[tabId] && tabs[tabId].iframe) {
             backBtn.disabled = false;
-            fwBtn.disabled= true;
+            fwBtn.disabled = !tabs[tabId].cgf;
         } else {
             backBtn.disabled = true;
             fwBtn.disabled = true;
@@ -231,6 +279,8 @@ document.getElementById('backBtn').addEventListener('click', () => {
             } else {
                 try {
                     tabs[tabId].iframe.contentWindow.history.back();
+                    tabs[tabId].cgf = true;
+                    document.getElementById('fwBtn').disabled = false;
                 } catch (e) {
                     console.log("can't go back:", e);
                 }
@@ -293,7 +343,8 @@ function loadWebsite(url) {
             url: fixedurl,
             title: url,
             iframe: iframe,
-            isFirst: true
+            isFirst: true,
+            cgf: false
         };
         document.querySelectorAll('.bframe').forEach(frame => {
             if(frame !== iframe) {
@@ -305,6 +356,10 @@ function loadWebsite(url) {
     urlDisplay.innerHTML = formatUrl(fixedurl);
     urlDisplay.style.display = 'block';
     urlInput.style.display = 'none';
+    updLIC(fixedurl);
+    setTimeout(() => {
+        updLIC(fixedurl);
+    },100);
     try {
         let urlObj = new URL(fixedurl);
         activeTab.querySelector('.tab-tl').textContent = urlObj.hostname;
@@ -317,3 +372,5 @@ function loadWebsite(url) {
     startURLM(tabs[tabId].iframe, tabId);
     updNavBtns();
 }
+
+updLIC(null);
