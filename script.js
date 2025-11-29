@@ -10,6 +10,103 @@ urlDisplay.className = 'url-display';
 urlContainer.insertBefore(urlDisplay,urlInput.nextSibling);
 let isNav = false;
 
+let bookmarks = JSON.parse(localStorage.getItem('krypton_bookmarks') || '[]');
+
+function renderBms() {
+    const container = document.getElementById('bmContainer');
+    container.innerHTML = '';
+    bookmarks.forEach((bookmark, index) => {
+        const bmEl = document.createElement('div');
+        bmEl.className = 'bm-item';
+        bmEl.innerHTML = `
+        <div class="bm-icon">
+            <i data-lucide="globe"></i>
+        </div>
+        <span class="bm-title">${bookmark.title}</span>
+        <div class="bm-remove" data-index="${index}">
+            <i data-lucide="x"></i>
+        </div>`;
+        bmEl.addEventListener('click', (e)=> {
+            if (!e.target.closest('.bm-remove')) {
+                loadWebsite(bookmark.url);
+            }
+        });
+        const removeBtn = bmEl.querySelector('.bm-remove');
+        removeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            removeBm(index);
+        });
+        container.appendChild(bmEl);
+    });
+    lucide.createIcons();
+}
+
+function addBm(url,title) {
+    const bookmark = {url,title};
+    bookmarks.push(bookmark);
+    localStorage.setItem('krypton_bookmarks', JSON.stringify(bookmarks));
+    renderBms();
+}
+
+function removeBm(index) {
+    bookmarks.splice(index,index+1);
+    localStorage.setItem('krypton_bookmarks', JSON.stringify(bookmarks));
+    renderBms();
+}
+
+function isBookmarked(url) {
+    return bookmarks.some(b => b.url === url);
+}
+
+function updBmBtn() {
+    const activeTab = document.querySelector('.tab.active');
+    if (!activeTab) return;
+    const tabId = activeTab.dataset.tabId;
+    const currentUrl = tabs[tabId]?.url;
+    const btn = document.getElementById('bmBtn');
+    const bookmarked = currentUrl && isBookmarked(currentUrl);
+    btn.innerHTML = '<i data-lucide="star"></i>';
+    lucide.createIcons();
+    if (bookmarked) {
+        const svg = btn.querySelector('svg');
+        svg.style.fill = '#60a5fa';
+        svg.style.color = '#60a5fa';
+    }
+}
+
+document.getElementById('bmBtn').addEventListener('click', () => {
+    const activeTab = document.querySelector('.tab.active');
+    if (!activeTab) return;
+    const tabId = activeTab.dataset.tabId;
+    const currentUrl = tabs[tabId]?.url;
+    if (!currentUrl) return;
+    const btn = document.getElementById('bmBtn');
+    if (isBookmarked(currentUrl)) {
+        const index = bookmarks.findIndex(b => b.url === currentUrl);
+        if (index !== -1) {
+            removeBm(index);
+        }
+        btn.innerHTML = '<i data-lucide="star"></i>';
+        lucide.createIcons();
+    } else {
+        let title;
+        try {
+            const urlObj = new URL(currentUrl);
+            title = urlObj.hostname;
+        } catch (e) {
+            title = currentUrl;
+        }
+        addBm(currentUrl, title);
+        btn.innerHTML = '<i data-lucide="star"></i>';
+        lucide.createIcons();
+        const svg = btn.querySelector('svg');
+        svg.style.fill = '#60a5fa';
+        svg.style.color = '#60a5fa';
+    }
+});
+
+renderBms();
+
 function formatUrl(url) {
     if (!url) return '';
     try {
@@ -118,6 +215,7 @@ function swTab(tabId) {
         updLIC(null);
         updNavBtns();
     }
+    updBmBtn();
 }
 
 function showWscreen() {
@@ -154,6 +252,7 @@ function startURLM(iframe,tabId) {
                 let encodedUrl = iframeSrc.split('/scramjet/')[1];
                 let decodedUrl = decodeURIComponent(encodedUrl);
                 if (tabs[tabId] && tabs[tabId].url !== decodedUrl) {
+                    updBmBtn();
                     tabs[tabId].isFirst = false;
                     if (lastUrl !== decodedUrl && !isNav) {
                         tabs[tabId].cgf = false;
@@ -388,6 +487,7 @@ function loadWebsite(url) {
     }
     startURLM(tabs[tabId].iframe, tabId);
     updNavBtns();
+    updBmBtn();
 }
 
 updLIC(null);

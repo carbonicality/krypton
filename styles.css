@@ -5,7 +5,7 @@
 }
 
 body {
-    font-family: 'Inter';
+    font-family: 'Geist';
     background: #000;
     color: #fff;
     height: 100vh;
@@ -39,7 +39,7 @@ body {
     padding: 11px 12px;
     background: #0a0a0a;
     border-right: 1px solid #1a1a1a;
-    cursor: pointer;
+    cursor: poGeist;
     transition: all 0.3s cubic-bezier(0.4,0,0.2,1); /* i still have no idea why background is in red but it should still work anyway */
     min-width: 160px;
     max-width: 200px;
@@ -129,7 +129,7 @@ body {
     justify-content: center;
     padding: 11px 12px;
     background: #0a0a0a;
-    cursor: pointer;
+    cursor: poGeist;
     transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
     border-right: 1px solid #1a1a1a;
 }
@@ -164,7 +164,7 @@ body {
     background: transparent;
     border: none;
     border-radius: 6px;
-    cursor: pointer;
+    cursor: poGeist;
     transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
     color: #808080;
 }
@@ -250,7 +250,7 @@ body {
     outline: none;
     color: #fff;
     font-size: 13px;
-    font-family: 'Inter';
+    font-family: 'Geist';
     transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -345,7 +345,7 @@ body {
     border: 1px solid rgba(96,165,250,0.2);
     border-radius: 12px;
     padding: 24px;
-    cursor: pointer;
+    cursor: poGeist;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     backdrop-filter: blur(10px);
     position: relative;
@@ -439,6 +439,7 @@ svg {
     border: none;
     background: #fff;
     animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 999;
 }
 
 @keyframes fadeIn {
@@ -453,7 +454,7 @@ svg {
 .url-display {
     flex: 1;
     font-size: 13px;
-    font-family: 'Inter';
+    font-family: 'Geist';
     color: #fff;
     white-space: nowrap;
     overflow: hidden;
@@ -477,4 +478,108 @@ svg {
 .url-display .url-path {
     color:#808080;
     transition: color 0.2s ease;
-}   
+}
+
+.bookmarks-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: #0a0a0a;
+    border-bottom: 1px solid #1a1a1a;
+    overflow-x: auto;
+    scrollbar-width: thin;
+}
+
+.bookmarks-bar::-webkit-scrollbar {
+    height: 4px;
+}
+
+.bookmarks-bar::-webkit-scrollbar-track {
+    background: #0a0a0a;
+}
+
+.bookmarks-bar::-webkit-scrollbar-thumb {
+    background: #2a2a2a;
+    border-radius: 2px;
+}
+
+.bm-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: #808080;
+    white-space: nowrap;
+    padding-right: 8px;
+    border-radius: 1px solid #1a1a1a;
+}
+
+.bm-container {
+    display: flex;
+    gap: 4px;
+    flex: 1;
+}
+
+.bm-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background: #0f0f0f;
+    border: 1px solid #1a1a1a;
+    border-radius: 4px;
+    cursor: poGeist;
+    transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+    white-space: nowrap;
+    position: relative;
+}
+
+.bm-item:hover {
+    background: #1a1a1a;
+    border-color: #2a2a2a;
+    transform: translateY(-1px);
+}
+
+.bm-icon svg,
+.bm-remove svg {
+    display: block;
+}
+.bm-icon {
+    width: 12px;
+    height: 12px;
+    color: #60a5fa;
+}
+
+.bm-icon svg {
+    width: 12px;
+    height: 12px;
+}
+
+.bm-remove svg {
+    width: 12px;
+    height: 12px;
+}
+
+.bm-title {
+    font-size: 12px;
+    color: #e0e0e0;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.bm-remove {
+    width: 12px;
+    height: 12px;
+    color: #808080;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    margin-left: 4px;
+}
+
+.bm-item:hover .bm-remove {
+    opacity: 1;
+}
+
+.bm-remove:hover {
+    color: #eb4034;
+}
