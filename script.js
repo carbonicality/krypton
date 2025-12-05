@@ -616,3 +616,16 @@ if (document.readyState === 'loading') {
 } else {
     initParticles();
 }
+
+// search box functionality
+const searchInput = document.querySelector('.search-input');
+if (searchInput) {
+    searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            const query = e.target.value.trim();
+            if (query) {
+                loadWebsite(query);
+            }
+        }
+    });
+}
