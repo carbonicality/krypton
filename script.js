@@ -429,9 +429,9 @@ document.getElementById('fwBtn').addEventListener('click', () => {
 });
 
 // its proxin' time.
-/* PLEASE NOTE REVIEWERS: I did not make tinyjet! it was made by https://github.com/soap-phia/
-therefore, the backend is NOT made by me.
-the github repo for tinyjet is at https://github.com/soap-phia/tinyjet/ please refer to this. */
+/* PLEASE NOTE REVIEWERS: I did not make tinyjet! it was made by https://github.com/AerialiteLabs/
+therefore, the backend is NOT made by me. tinyjet is a static implementation of scramjet (refer to https://github.com/MercuryWorkshop/scramjet)
+the github repo for tinyjet is at https://github.com/AerialiteLabs/tinyjet-frontend/, please refer to this. */
 
 function search(input) {
     let template = "https://www.google.com/search?q=%s";
