@@ -319,16 +319,29 @@ function addTL(tab) {
                 tab.style.animation = 'slideOut 0.2s ease-out';
                 setTimeout(() => {
                     const tabId = tab.dataset.tabId;
+                    const wasActive = tab.classList.contains('active');
+                    const prevTab = tab.previousElementSibling;
+                    const nextTab = tab.nextElementSibling;
                     if (tabs[tabId] && tabs[tabId].iframe) {
                         tabs[tabId].iframe.remove();
                     }
                     delete tabs[tabId];
                     tab.remove();
-                    if (tab.classList.contains('active')) {
-                        const lastTab = document.querySelector('.tab:last-of-type');
-                        if (lastTab) {
-                            lastTab.classList.add('active');
-                            swTab(lastTab.dataset.tabId);
+                    if (wasActive) {
+                        if (prevTab && prevTab.classList.contains('tab')) {
+                            prevTab.classList.add('active');
+                            swTab(prevTab.dataset.tabId);
+                        }
+                        else if (nextTab && nextTab.classList.contains('tab')) {
+                            nextTab.classList.add('active');
+                            swTab(nextTab.dataset.tabId);
+                        }
+                        else {
+                            const anyTab = document.querySelector('.tab');
+                            if (anyTab) {
+                                anyTab.classList.add('active');
+                                swTab(anyTab.dataset.tabId);
+                            }
                         }
                     }
                 },200);
