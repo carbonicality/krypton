@@ -679,3 +679,34 @@ document.getElementById('aboutOverlay').addEventListener('click', (e) => {
         },150);
     }
 });
+
+// the great github commit pulling thingymajig
+async function fetchGHCommit() {
+    const commitEl = document.getElementById('ghCommit');
+    try {
+        const response = await fetch('https://api.github.com/repos/carbonicality/krypton/commits/main');
+        const data = await response.json();
+        if (data.sha) {
+            const shortSha = data.sha.substring(0,7);
+            const commitMsg = data.commit.message.split('\n')[0];
+            const commitDate = new Date(data.commit.author.date).toLocaleDateString();
+            commitEl.textContent = `${shortSha} - ${commitDate}`;
+            commitEl.title = commitMsg;
+        } else {
+            commitEl.textContent = 'unable to fetch!'
+        }
+    } catch (error) {
+        console.error('failed to fetch gh commit: ', error);
+        commitEl.textContent = 'failed to fetch';
+    }
+}
+
+document.getElementById('aboutItem').addEventListener('click', () => {
+    drMenu.classList.remove('show');
+    const overlay = document.getElementById('aboutOverlay');
+    overlay.style.display = 'flex';
+    overlay.offsetHeight;
+    overlay.classList.add('show');
+    lucide.createIcons();
+    fetchGHCommit();
+});
