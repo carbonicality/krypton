@@ -646,12 +646,36 @@ document.addEventListener('click', (e) => {
     }
 });
 
-document.getElementById('aboutItem').addEventListener('click', () => {
-    drMenu.classList.remove('show');
-    alert('placeholder, aboutItem');
-});
-
 document.getElementById('historyItem').addEventListener('click', () => {
     drMenu.classList.remove('show');
     alert('placeholder, historyItem');
+});
+
+// about overlay stuff
+document.getElementById('aboutItem').addEventListener('click', () => {
+    drMenu.classList.remove('show');
+    const overlay = document.getElementById('aboutOverlay');
+    overlay.style.display = 'flex';
+    overlay.offsetHeight;
+    overlay.classList.add('show');
+    lucide.createIcons();
+});
+
+document.getElementById('closeAbout').addEventListener('click', () => {
+    const overlay = document.getElementById('aboutOverlay');
+    overlay.classList.remove('show');
+    // this setTimeout fixes the anim not working, this took me a while to figure out lmao
+    setTimeout(() => {
+        overlay.style.display = 'none';
+    },150);
+});
+
+document.getElementById('aboutOverlay').addEventListener('click', (e) => {
+    if (e.target.id === 'aboutOverlay') {
+        const overlay = document.getElementById('aboutOverlay');
+        overlay.classList.remove('show');
+        setTimeout(() => {
+            overlay.style.display = 'none';
+        },150);
+    }
 });
