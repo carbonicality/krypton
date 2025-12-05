@@ -629,3 +629,29 @@ if (searchInput) {
         }
     });
 }
+
+// menu dropdown stuff
+const menuBtn = document.getElementById('menuBtn');
+const drMenu = document.getElementById('drMenu');
+
+menuBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    drMenu.classList.toggle('show');
+    lucide.createIcons();
+});
+
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.menu-wpr')) {
+        drMenu.classList.remove('show');
+    }
+});
+
+document.getElementById('aboutItem').addEventListener('click', () => {
+    drMenu.classList.remove('show');
+    alert('placeholder, aboutItem');
+});
+
+document.getElementById('historyItem').addEventListener('click', () => {
+    drMenu.classList.remove('show');
+    alert('placeholder, historyItem');
+});
