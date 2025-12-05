@@ -1,0 +1,40 @@
+{
+    "headers": [
+        {
+            "source": "/sw.js",
+            "headers": [
+                {
+                    "key": "Service-Worker-Allowed",
+                    "value": "/"
+                },
+                {
+                    "key": "Content-Type",
+                    "value": "application/javascript"
+                },
+                {
+                    "key": "Cache-Control",
+                    "value": "no-cache"
+                }
+            ]
+        },
+        {
+            "source": "/bareworker.js",
+            "headers": [
+                {
+                    "key": "Content-Type",
+                    "value": "application/javascript"
+                },
+                {
+                    "key": "Cache-Control",
+                    "value": "no-cache"
+                }
+            ]
+        }
+    ],
+    "rewrites": [
+        {
+            "source": "/(.*)",
+            "destination": "/index.html"
+        }
+    ]
+}
