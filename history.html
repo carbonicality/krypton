@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="./styles/history.css">
+        <script src="https://unpkg.com/lucide@latest"></script>
+        <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    </head>
+    <body>
+        <div id="particles-js"></div>
+        <div class="histainer">
+            <header class="hist-hdr">
+                <h1>history</h1>
+                <p>placeholder, history sub</p>
+            </header>
+            <div class="controls">
+                <div class="search-wpr">
+                    <div class="search-box">
+                        <i data-lucide="search"></i>
+                        <input type="text" placeholder="search through your history..." class="search-input">
+                    </div>
+                </div>
+                <button class="clear-btn">
+                    <i data-lucide="trash-2"></i>
+                    <span>clear all</span>
+                </button>
+            </div>
+            <div class="hist-sec">
+                <div class="sec-header">
+                    <h2>yesterday</h2>
+                    <span class="item-count">0 items</span>
+                </div>
+                <div class="empty-state">
+                    <i data-lucide="calendar"></i>
+                    <p>no browsing history from yesterday :(</p>
+                </div>
+            </div>
+            <div class="hist-sec">
+                <div class="sec-header">
+                    <h2>last 7 days</h2>
+                    <span class="item-count">0 items</span>
+                </div>
+                <div class="empty-state">
+                    <i data-lucide="calendar-days"></i>
+                    <p>no browsing history from the last 7 days :(</p>
+                </div>
+            </div>
+        </div>
+        <script>
+            // just the main looks-beautifying scripts that are needed
+            lucide.createIcons();
+            function initParticles() {
+                if (typeof particlesJS !== 'undefined') {
+                    particlesJS('particles-js', {
+                        particles: {
+                            number: {
+                                value: 120,
+                                density: {
+                                    enable: true,
+                                    value_area: 800
+                                }
+                            },
+                            color: {
+                                value: ['#60a5fa', '#93c5fd', '#dbeafe', '#fff']
+                            },
+                            shape: {
+                                type: 'circle'
+                            },
+                            opacity: {
+                                value: 0.6,
+                                random: true,
+                                anim: {
+                                    enable: true,
+                                    speed: 0.8,
+                                    opacity_min: 0.1,
+                                    sync: false
+                                }
+                            },
+                            size: {
+                                value: 2.5,
+                                random: true,
+                                anim: {
+                                    enable: true,
+                                    speed: 2,
+                                    size_min: 0.3,
+                                    sync: false
+                                }
+                            },
+                            line_linked: {
+                                enable: true,
+                                distance: 120,
+                                color: '#60a5fa',
+                                opacity: 0.15,
+                                width: 1
+                            },
+                            move: {
+                                enable: true,
+                                speed: 0.8,
+                                direction: 'none',
+                                random: true,
+                                straight: false,
+                                out_mode: 'out',
+                                bounce: false,
+                                attract: {
+                                    enable: true,
+                                    rotateX: 600,
+                                    rotateY: 1200
+                                }
+                            }
+                        },
+                        interactivity: {
+                            detect_on: 'canvas',
+                            events: {
+                                onhover: {
+                                    enable: true,
+                                    mode: 'grab'
+                                },
+                                onclick: {
+                                    enable: true,
+                                    mode: 'push'
+                                },
+                                resize: true
+                            },
+                            modes: {
+                                grab: {
+                                    distance: 140,
+                                    line_linked: {
+                                        opacity: 0.4
+                                    }
+                                },
+                                push: {
+                                    particles_nb: 4
+                                }
+                            }
+                        },
+                        retina_detect: true
+                    });
+                } else {
+                    setTimeout(initParticles,100);
+                }
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initParticles);
+            } else {
+                initParticles();
+            }
+        </script>
+    </body>
+</html>

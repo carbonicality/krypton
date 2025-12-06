@@ -648,7 +648,7 @@ document.addEventListener('click', (e) => {
 
 document.getElementById('historyItem').addEventListener('click', () => {
     drMenu.classList.remove('show');
-    alert('placeholder, historyItem');
+    loadWebsiteInternal('./history.html', 'History');
 });
 
 // about overlay stuff
@@ -710,3 +710,43 @@ document.getElementById('aboutItem').addEventListener('click', () => {
     lucide.createIcons();
     fetchGHCommit();
 });
+
+// for internal pages, i.e history.html
+function loadWebsiteInternal(url,title) {
+    const activeTab = document.querySelector('.tab.active');
+    if (!activeTab) return;
+    const tabId = activeTab.dataset.tabId;
+    const cArea = document.querySelector('.c-area');
+    const wScreen = document.querySelector('.wscreen');
+    wScreen.style.display = 'none';
+    if (tabs[tabId] && tabs[tabId].iframe) {
+        tabs[tabId].iframe.src = url;
+        tabs[tabId].url = url;
+    } else {
+        const iframe = document.createElement('iframe');
+        iframe.className = 'bframe';
+        iframe.src = url;
+        iframe.dataset.tabId = tabId;
+        cArea.appendChild(iframe);
+        tabs[tabId] = {
+            url: url,
+            title: title,
+            iframe: iframe,
+            isFirst: true,
+            cgf: false
+        };
+        document.querySelectorAll('.bframe').forEach(frame => {
+            if (frame !== iframe) {
+                frame.style.display = 'none';
+            }
+        });
+    }
+    activeTab.querySelector('.tab-tl').textContent = title;
+    document.getElementById('urlInput').value = '';
+    urlDisplay.innerHTML = '';
+    urlDisplay.style.display = 'none';
+    urlInput.style.display = 'block';
+    updLIC(url);
+    updNavBtns();
+    updBmBtn();
+}
