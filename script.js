@@ -11,6 +11,49 @@ urlContainer.insertBefore(urlDisplay,urlInput.nextSibling);
 let isNav = false;
 
 let bookmarks = JSON.parse(localStorage.getItem('krypton_bookmarks') || '[]');
+let history = JSON.parse(localStorage.getItem('krypton_history') || '[]');
+
+function ATHistory(url,title) {
+    if (!url || url === 'krypton://new-tab' || url.startsWith('./') || url.startsWith('krypton://')) {
+        return;
+    }
+    const histEntry = {
+        url: url,
+        title: title,
+        timestamp: Date.now()
+    };
+    history = history.filter(entry => entry.url !== url);
+    history.unshift(histEntry);
+    if (history.length > 1000) {
+        history = history.slice(0,1000);
+    }
+    localStorage.setItem('krypton_history', JSON.stringify(history));
+}
+
+function clearHist() {
+    history = [];
+    localStorage.setItem('krypton_history', JSON.stringify(history));
+}
+
+function getHistTR(range) {
+    const now = Date.now();
+    const odMs = 24 * 60 * 60 * 1000;
+    switch(range) {
+        case 'today':
+            const sToday = new Date().setHours(0,0,0,0);
+            return history.filter(entry => entry.timestamp >= sToday);
+        case 'yesterday':
+            const sYest = new Date().setHours(0,0,0,0) - odMs;
+            const sToday2 = new Date().setHours(0,0,0,0);
+            return history.filter(entry => entry.timestamp >= sYest && entry.timestamp < sToday2);
+        case 'week':
+            return history.filter(entry => entry.timestamp >= now - (7 * odMs));
+        case 'older':
+            return history.filter(entry => entry.timestamp < now - (7 * odMs));
+        default:
+            return history;
+    }
+}
 
 function renderBms() {
     const container = document.getElementById('bmContainer');
@@ -508,6 +551,12 @@ function loadWebsite(url) {
     } catch (e) {
         activeTab.querySelector('.tab-tl').textContent = fixedurl;
     }
+    try {
+        let urlObj = new URL(fixedurl);
+        ATHistory(fixedurl, urlObj.hostname);
+    } catch (e) {
+        ATHistory(fixedurl, fixedurl);
+    }
     if (urlUpdInterval) {
         clearInterval(urlUpdInterval);
     }
@@ -750,3 +799,9 @@ function loadWebsiteInternal(url,title) {
     updNavBtns();
     updBmBtn();
 }
+
+window.addEventListener('message', (event) => {
+    if (event.data.type === 'clearHistory') {
+        localStorage.setItem('krypton_history', JSON.stringify([]));
+    }
+});

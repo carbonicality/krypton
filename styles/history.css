@@ -169,7 +169,7 @@ body {
     height: 18px;
 }
 
-.hist-content {
+.hist-cont {
     display: flex;
     flex-direction: column;
     gap: 32px;
