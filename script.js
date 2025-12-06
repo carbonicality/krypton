@@ -152,6 +152,10 @@ renderBms();
 
 function formatUrl(url) {
     if (!url || url === 'krypton://new-tab') return '';
+    if (url.startsWith('krypton://')) {
+        const path = url.replace('krypton://', '');
+        return `<span class="url-proto">krypton://</span><span class="url-domain">${path}</span>`;
+    }
     try {
         const urlObj = new URL(url);
         return `<span class="url-proto">${urlObj.protocol}//</span><span class="url-domain">${urlObj.hostname}</span><span class="url-path">${urlObj.pathname}${urlObj.search}${urlObj.hash}</span>`;
@@ -225,7 +229,7 @@ function updLIC(url) {
             urlIcon.innerHTML = '<i data-lucide="unlock"></i>';
             urlIcon.style.color = '#eb4034';
         } else {
-            urlIcon.innerHTML = '<i data-lucide="ellipsis"></i>';
+            urlIcon.innerHTML = '<i data-lucide="grip"></i>';
             urlIcon.style.color = '#60a5fa';
         }
         lucide.createIcons();
@@ -506,6 +510,17 @@ function loadWebsite(url) {
         showWscreen();
         return;
     }
+
+    //handle krypton internal pages
+    if (url.toLowerCase() === 'krypton://bookmarks') {
+        loadWebsiteInternal('./bookmarks.html', 'Bookmarks');
+        return;
+    }
+    if (url.toLowerCase() === 'krypton://history') {
+        loadWebsiteInternal('./history.html', 'History');
+        return;
+    }
+
     const cArea = document.querySelector('.c-area');
     const wScreen = document.querySelector('.wscreen');
     let fixedurl = search(url);
@@ -700,6 +715,11 @@ document.getElementById('historyItem').addEventListener('click', () => {
     loadWebsiteInternal('./history.html', 'History');
 });
 
+document.getElementById('bmItem').addEventListener('click', () => {
+    drMenu.classList.remove('show');
+    loadWebsiteInternal('./bookmarks.html', 'Bookmarks');
+});
+
 // about overlay stuff
 document.getElementById('aboutItem').addEventListener('click', () => {
     drMenu.classList.remove('show');
@@ -768,9 +788,15 @@ function loadWebsiteInternal(url,title) {
     const cArea = document.querySelector('.c-area');
     const wScreen = document.querySelector('.wscreen');
     wScreen.style.display = 'none';
+    let kryptonUrl = url;
+    if (url === './history.html') {
+        kryptonUrl = 'krypton://history';
+    } else if (url === './bookmarks.html') {
+        kryptonUrl = 'krypton://bookmarks';
+    }
     if (tabs[tabId] && tabs[tabId].iframe) {
         tabs[tabId].iframe.src = url;
-        tabs[tabId].url = url;
+        tabs[tabId].url = kryptonUrl;
     } else {
         const iframe = document.createElement('iframe');
         iframe.className = 'bframe';
@@ -778,7 +804,7 @@ function loadWebsiteInternal(url,title) {
         iframe.dataset.tabId = tabId;
         cArea.appendChild(iframe);
         tabs[tabId] = {
-            url: url,
+            url: kryptonUrl,
             title: title,
             iframe: iframe,
             isFirst: true,
@@ -791,11 +817,11 @@ function loadWebsiteInternal(url,title) {
         });
     }
     activeTab.querySelector('.tab-tl').textContent = title;
-    document.getElementById('urlInput').value = '';
-    urlDisplay.innerHTML = '';
-    urlDisplay.style.display = 'none';
-    urlInput.style.display = 'block';
-    updLIC(url);
+    document.getElementById('urlInput').value = kryptonUrl;
+    urlDisplay.innerHTML = formatUrl(kryptonUrl);
+    urlDisplay.style.display = 'block';
+    urlInput.style.display = 'none';
+    updLIC(kryptonUrl);
     updNavBtns();
     updBmBtn();
 }
@@ -804,4 +830,23 @@ window.addEventListener('message', (event) => {
     if (event.data.type === 'clearHistory') {
         localStorage.setItem('krypton_history', JSON.stringify([]));
     }
+});
+
+// shortcuts stuff
+document.querySelectorAll('.shortcut').forEach(shortcut => {
+    shortcut.addEventListener('click', () => {
+        const title = shortcut.querySelector('.s-title').textContent.toLowerCase();
+        if (title === 'bookmarks') {
+            loadWebsiteInternal('./bookmarks.html', 'Bookmarks');
+        } else if (title === 'games') {
+            //replace with real functionality when we get to that point
+            alert("not implemented yet (check out bookmarks though) :(");
+        } else if (title === 'apps') {
+            //same here
+            alert("not implemented yet (check out bookmarks though) :(");
+        } else if (title === 'settings') {
+            //and same here
+            alert("not implemented yet (check out bookmarks though) :(");
+        }
+    });
 });

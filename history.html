@@ -98,16 +98,24 @@
                 return date.toLocaleTimeString('en-GB', {hour: 'numeric', minute:'2-digit', hour12: true});
             }
 
+            function formatUrl(url) {
+                if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                    return 'https://' + url;
+                }
+                return url;
+            }
+
             function createHistItem(entry, index) {
                 const item = document.createElement('div');
                 item.className = 'hist-item';
+                const displayUrl = entry.url.replace(/^https?:\/\//, '');
                 item.innerHTML = `
                 <div class="hist-item-icon">
                     <i data-lucide="globe"></i>
                 </div>
                 <div class="hist-item-cont">
                     <div class="hist-item-tl">${entry.title}</div>
-                    <div class="hist-item-url">${entry.url}</div>
+                    <div class="hist-item-url">${displayUrl}</div>
                 </div>
                 <div class="hist-item-time">${formatTime(entry.timestamp)}</div>
                 <button class="hist-item-del" data-index="${index}">
@@ -115,7 +123,7 @@
                 </button>`;
                 item.addEventListener('click', (e) => {
                     if (!e.target.closest('.hist-item-del')) {
-                        window.parent.postMessage({type:'loadUrl',url:entry.url}, '*');
+                        window.parent.postMessage({type:'loadUrl',url:formatUrl(entry.url)}, '*');
                     }
                 });
                 const delBtn = item.querySelector('.hist-item-del');

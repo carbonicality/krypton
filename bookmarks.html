@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="./styles/bookmarks.css">
+        <script src="https://unpkg.com/lucide@latest"></script>
+        <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    </head>
+    <body>
+        <div id="particles-js"></div>
+        <div class="bmcontainer">
+            <header class="bm-hdr">
+                <h1>bookmarks</h1>
+                <p>placeholder, bookmarks</p>
+            </header>
+            <div class="controls">
+                <div class="search-wpr">
+                    <div class="search-box">
+                        <i data-lucide="search"></i>
+                        <input type="text" placeholder="search your bookmarks..." class="search-input" id="bmSearch">
+                    </div>
+                </div>
+                <button class="add-btn" id="addBtn">
+                    <i data-lucide="plus"></i>
+                    <span>add bookmark</span>
+                </button>
+            </div>
+            <div class="bm-content">
+                <div class="bm-sec">
+                    <div class="sec-header">
+                        <h2>all bookmarks</h2>
+                        <span class="item-count" id="bmCount">0 items</span>
+                    </div>
+                    <div id="bmList"></div>
+                </div>
+            </div>
+        </div>
+        <div class="overlay" id="addOverlay">
+            <div class="ovr-content">
+                <div class="ovr-hdr">
+                    <h3>add bookmark</h3>
+                    <button class="ovr-close" id="ovrClose">
+                        <i data-lucide="x"></i>
+                    </button>
+                </div>
+                <div class="ovr-body">
+                    <div class="input-group">
+                        <label>title</label>
+                        <input type="text" id="bmTitle" placeholder="enter bookmark title..." class="ovr-input">
+                    </div>
+                    <div class="input-group">
+                        <label>URL</label>
+                        <input type="text" id="bmUrl" placeholder="https://example.com" class="ovr-input">
+                    </div>
+                </div>
+                <div class="ovr-footer">
+                    <button class="ovr-btn cancel-btn" id="cancelBtn">cancel</button>
+                    <button class="ovr-btn save-btn" id="saveBtn">save bookmark</button>
+                </div>
+            </div>
+        </div>
+        <script>
+            lucide.createIcons();
+            let bookmarks = JSON.parse(localStorage.getItem('krypton_bookmarks') || '[]');
+            let filteredBm = [...bookmarks];
+
+            function formatUrl(url) { // an ATTEMPT to stop it from reporting http instead of https but i'm not sure if this will work
+                if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                    return 'https://' + url;
+                }
+                return url;
+            }
+
+            function createBmItem(entry,index) {
+                const item = document.createElement('div');
+                item.className = 'bm-item';
+                const displayUrl = entry.url.replace(/^https?:\/\//, '');
+                item.innerHTML = `
+                <div class="bm-item-icon">
+                    <i data-lucide="bookmark"></i>
+                </div>
+                <div class="bm-item-cont">
+                    <div class="bm-item-tl">${entry.title}</div>
+                    <div class="bm-item-url">${displayUrl}</div>
+                </div>
+                <div class="bm-item-time">${formatTime(entry.timestamp)}</div>
+                <button class="bm-item-del" data-index="${index}">
+                    <i data-lucide="x"></i>
+                </button>`;
+                item.addEventListener('click', (e) => {
+                    if (!e.target.closest('.bm-item-del')) {
+                        window.parent.postMessage({type:'loadUrl',url:formatUrl(entry.url)}, '*');
+                    }
+                });
+                const delBtn = item.querySelector('.bm-item-del');
+                delBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    delBmItem(index);
+                });
+                return item;
+            }
+            
+            function formatTime(timestamp) {
+                const date = new Date(timestamp);
+                const now = new Date();
+                const diff = now - date;
+                const hours = Math.floor(diff / (1000 * 60 * 60));
+                const days = Math.floor(hours / 24);
+                if (days > 0) return `${days}d ago`;
+                if (hours > 0) return `${hours}h ago`;
+                return 'just now';
+            }
+
+            function createES(message) {
+                const empty = document.createElement('div');
+                empty.className = 'empty-state';
+                empty.innerHTML = `
+                <i data-lucide="bookmark-x"></i>
+                <p>${message}</p>`;
+                return empty;
+            }
+
+            function renderBookmarks() {
+                const bmCont = document.getElementById('bmList');
+                bmCont.innerHTML = '';
+                document.getElementById('bmCount').textContent = `${filteredBm.length} items`;
+                if (filteredBm.length === 0) {
+                    bmCont.appendChild(createES('no bookmarks yet'));
+                } else {
+                    const itemsDiv = document.createElement('div');
+                    itemsDiv.className = 'bm-items';
+                    filteredBm.forEach((entry,index) => {
+                        itemsDiv.appendChild(createBmItem(entry,bookmarks.indexOf(entry)));
+                    });
+                    bmCont.appendChild(itemsDiv);
+                }
+                lucide.createIcons();
+            }
+
+            function delBmItem(index) {
+                bookmarks.splice(index,1);
+                localStorage.setItem('krypton_bookmarks', JSON.stringify(bookmarks));
+                filteredBm = [...bookmarks];
+                renderBookmarks();
+            }
+            
+            function addBookmark(title,url) {
+                const bookmark = {
+                    title: title,
+                    url: formatUrl(url),
+                    timestamp: Date.now()
+                };
+                bookmarks.unshift(bookmark);
+                localStorage.setItem('krypton_bookmarks', JSON.stringify(bookmarks));
+                filteredBm = [...bookmarks];
+                renderBookmarks();
+            }
+
+            function searchBookmarks(query) {
+                if (!query) {
+                    filteredBm = [...bookmarks];
+                } else {
+                    const lowerQuery = query.toLowerCase();
+                    filteredBm = bookmarks.filter(entry => 
+                        entry.title.toLowerCase().includes(lowerQuery) || entry.url.toLowerCase().includes(lowerQuery)
+                    );
+                }
+                renderBookmarks();
+            }
+
+            const overlay = document.getElementById('addOverlay');
+            const addBtn = document.getElementById('addBtn');
+            const ovrClose = document.getElementById('ovrClose');
+            const cancelBtn = document.getElementById('cancelBtn');
+            const saveBtn = document.getElementById('saveBtn');
+            const bmTitle = document.getElementById('bmTitle');
+            const bmUrl = document.getElementById('bmUrl');
+
+            addBtn.addEventListener('click', () => {
+                overlay.classList.add('active');
+                bmTitle.value = '';
+                bmUrl.value = '';
+                bmTitle.focus();
+            });
+
+            ovrClose.addEventListener('click', () => {
+                overlay.classList.remove('active');
+            });
+
+            cancelBtn.addEventListener('click', () => {
+                overlay.classList.remove('active');
+            });
+
+            saveBtn.addEventListener('click', () => {
+                const title = bmTitle.value.trim();
+                const url = bmUrl.value.trim();
+                if (title && url) {
+                    addBookmark(title,url);
+                    overlay.classList.remove('active');
+                } else {
+                    alert('please fill in both the title and URL fields.');
+                }
+            });
+
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    overlay.classList.remove('active');
+                }
+            });
+
+            const searchInput = document.getElementById('bmSearch');
+            searchInput.addEventListener('input', (e) => {
+                searchBookmarks(e.target.value.trim());
+            });
+            renderBookmarks();
+            
+            // beautifying stuff
+            // ripped from history.html
+            function initParticles() {
+                if (typeof particlesJS !== 'undefined') {
+                    particlesJS('particles-js', {
+                        particles: {
+                            number: {
+                                value: 120,
+                                density: {
+                                    enable: true,
+                                    value_area: 800
+                                }
+                            },
+                            color: {
+                                value: ['#60a5fa', '#93c5fd', '#dbeafe', '#fff']
+                            },
+                            shape: {
+                                type: 'circle'
+                            },
+                            opacity: {
+                                value: 0.6,
+                                random: true,
+                                anim: {
+                                    enable: true,
+                                    speed: 0.8,
+                                    opacity_min: 0.1,
+                                    sync: false
+                                }
+                            },
+                            size: {
+                                value: 2.5,
+                                random: true,
+                                anim: {
+                                    enable: true,
+                                    speed: 2,
+                                    size_min: 0.3,
+                                    sync: false
+                                }
+                            },
+                            line_linked: {
+                                enable: true,
+                                distance: 120,
+                                color: '#60a5fa',
+                                opacity: 0.15,
+                                width: 1
+                            },
+                            move: {
+                                enable: true,
+                                speed: 0.8,
+                                direction: 'none',
+                                random: true,
+                                straight: false,
+                                out_mode: 'out',
+                                bounce: false,
+                                attract: {
+                                    enable: true,
+                                    rotateX: 600,
+                                    rotateY: 1200
+                                }
+                            }
+                        },
+                        interactivity: {
+                            detect_on: 'canvas',
+                            events: {
+                                onhover: {
+                                    enable: true,
+                                    mode: 'grab'
+                                },
+                                onclick: {
+                                    enable: true,
+                                    mode: 'push'
+                                },
+                                resize: true
+                            },
+                            modes: {
+                                grab: {
+                                    distance: 140,
+                                    line_linked: {
+                                        opacity: 0.4
+                                    }
+                                },
+                                push: {
+                                    particles_nb: 4
+                                }
+                            }
+                        },
+                        retina_detect: true
+                    });
+                } else {
+                    setTimeout(initParticles,100);
+                }
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initParticles);
+            } else {
+                initParticles();
+            }
+        </script>
+    </body>
+</html>
