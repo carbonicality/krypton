@@ -162,7 +162,7 @@
             const connection = new BareMux.BareMuxConnection("/bareworker.js");
             async function setTransport() {
                 await connection.setTransport("https://cdn.jsdelivr.net/npm/@mercuryworkshop/epoxy-transport/dist/index.mjs", [{
-                    wisp: "wss://gointospace.app/wisp/"
+                    wisp: "wss://wisp.mercurywork.shop/"
                 }]);
             }
             setTransport();
