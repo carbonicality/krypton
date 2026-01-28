@@ -1,3 +1,7 @@
+import * as BareMux from "/baremux/index.mjs";
+const connection=new BareMux.BareMuxConnection("/baremux/worker.js");
+let swReg = false;
+
 lucide.createIcons();
 
 let tabCount = 1;
@@ -12,6 +16,31 @@ let isNav = false;
 
 let bookmarks = JSON.parse(localStorage.getItem('krypton_bookmarks') || '[]');
 let history = JSON.parse(localStorage.getItem('krypton_history') || '[]');
+
+async function registerSW() {
+    if (!navigator.serviceWorker) {
+        throw new Error("browser doesnt support sw");
+    }
+    await navigator.serviceWorker.register('/uv/uv.sw.js');
+}
+
+async function initProxy() {
+    if (!swReg) {
+        try {
+            await registerSW();
+            swReg=true;
+            console.log('sw registered');
+        } catch (err) {
+            console.error('sw reg failed',err);
+            throw err;
+        }
+    }
+    let wispUrl = "wss://wisp.mercurywork.shop/";
+    if ((await connection.getTransport()) !== "/epoxy/index.mjs") {
+        await connection.setTransport("/epoxy/index.mjs",[{wisp:wispUrl}]);
+        console.log('epoxy transport set');
+    }
+}
 
 function ATHistory(url,title) {
     if (!url || url === 'krypton://new-tab' || url.startsWith('./') || url.startsWith('krypton://')) {
@@ -320,9 +349,9 @@ function startURLM(iframe,tabId) {
     urlUpdInterval = setInterval(() => {
         try {
             let iframeSrc = iframe.contentWindow.location.href;
-            if (iframeSrc.includes('/scramjet/')) {
-                let encodedUrl = iframeSrc.split('/scramjet/')[1];
-                let decodedUrl = decodeURIComponent(encodedUrl);
+            if (iframeSrc.includes(__uv$config.prefix)) {
+                let encodedUrl = iframeSrc.split(__uv$config.prefix)[1];
+                let decodedUrl = __uv$config.decodeUrl(encodedUrl);
                 if (tabs[tabId] && tabs[tabId].url !== decodedUrl) {
                     updBmBtn();
                     tabs[tabId].isFirst = false;
@@ -489,9 +518,6 @@ document.getElementById('fwBtn').addEventListener('click', () => {
 });
 
 // its proxin' time.
-/* PLEASE NOTE REVIEWERS: I did not make tinyjet! it was made by https://github.com/AerialiteLabs/
-therefore, the backend is NOT made by me. tinyjet is a static implementation of scramjet (refer to https://github.com/MercuryWorkshop/scramjet)
-the github repo for tinyjet is at https://github.com/AerialiteLabs/tinyjet-frontend/, please refer to this. */
 
 function search(input) {
     let template = "https://www.google.com/search?q=%s";
@@ -505,26 +531,30 @@ function search(input) {
     return template.replace("%s", encodeURIComponent(input));
 }
 
-function loadWebsite(url) {
-    if (!url || url.toLowerCase() === 'krypton://new-tab' || url.toLowerCase() === 'krypton new tab') {
+async function loadWebsite(url) {
+    if (!url || url.toLowerCase() === 'krypton://new-tab' || url.toLowerCase()==='krypton new tab') {
         showWscreen();
         return;
     }
-
-    //handle krypton internal pages
-    if (url.toLowerCase() === 'krypton://bookmarks') {
-        loadWebsiteInternal('./bookmarks.html', 'Bookmarks');
+    if (url.toLowerCase()==='krypton://bookmarks') {
+        loadWebsiteInternal('./bookmarks.html','Bookmarks');
         return;
     }
-    if (url.toLowerCase() === 'krypton://history') {
-        loadWebsiteInternal('./history.html', 'History');
+    if (url.toLowerCase()=='krypton://history') {
+        loadWebsiteInternal('./history.html','History');
         return;
     }
-
+    try{
+        await initProxy();
+    } catch (err) {
+        console.error('proxy init failed :(',err);
+        alert('failed to init proxy');
+        return;
+    }
     const cArea = document.querySelector('.c-area');
     const wScreen = document.querySelector('.wscreen');
     let fixedurl = search(url);
-    let src = window.scramjet.encodeUrl(fixedurl);
+    let src = __uv$config.prefix + __uv$config.encodeUrl(fixedurl);
     console.log('full url:',fixedurl);
     console.log('proxy url:',src);
     const activeTab = document.querySelector('.tab.active');

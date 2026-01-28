@@ -131,7 +131,7 @@
                         </div>
                         <div class="ovr-info-item">
                             <span class="ovr-info-lb">proxy</span>
-                            <span class="ovr-info-val">Tinyjet (Scramjet Static)</span>
+                            <span class="ovr-info-val">UV Static</span>
                         </div>
                         <div class="ovr-info-item">
                             <span class="ovr-info-lb">GitHub commit</span>
@@ -141,36 +141,7 @@
                 </div>
             </div>
         </div>
-        <!--<script src="script.js"></script>-->
-        <script src="https://cdn.jsdelivr.net/gh/soap-phia/tinyjet@latest/tinyjet/scramjet.all.js" defer></script>
-        <script type="module" defer>
-            import * as BareMux from "https://cdn.jsdelivr.net/npm/@mercuryworkshop/bare-mux/dist/index.mjs";
-            const { ScramjetController } = $scramjetLoadController();
-            const scramjet = new ScramjetController({
-                files: {
-                    wasm: "https://cdn.jsdelivr.net/gh/soap-phia/tinyjet@latest/tinyjet/wasm.wasm",
-                    all: "https://cdn.jsdelivr.net/gh/soap-phia/tinyjet@latest/tinyjet/scramjet.all.js",
-                    sync: "https://cdn.jsdelivr.net/gh/soap-phia/tinyjet@latest/tinyjet/scramjet.sync.js"
-                }
-            });
-            try {
-                scramjet.init();
-                navigator.serviceWorker.register("/sw.js");
-            } catch (e) {
-                console.error("scramjet failed to initialise :(", e);
-            }
-            const connection = new BareMux.BareMuxConnection("/bareworker.js");
-            async function setTransport() {
-                await connection.setTransport("https://cdn.jsdelivr.net/npm/@mercuryworkshop/epoxy-transport/dist/index.mjs", [{
-                    wisp: "wss://wisp.mercurywork.shop/" // replace this
-                }]);
-            }
-            setTransport();
-            window.scramjet = scramjet;
-            window.proxyReady = true;
-            const script = document.createElement('script');
-            script.src = 'script.js';
-            document.body.appendChild(script);
-        </script>
+        <script src="./uv/uv.config.js"></script>
+        <script src="script.js" type="module"></script>
     </body>
 </html>
