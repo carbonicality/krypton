@@ -84,6 +84,54 @@ function getHistTR(range) {
     }
 }
 
+function setupIntercept(iframe,tabId) {
+    iframe.addEventListener('load',()=>{
+        try {
+            const iframeDoc = iframe.contentWindow.document;
+            iframeDoc.addEventListener('click',(e)=>{
+                const link = e.target.closest('a');
+                if (link && (link.target==='_blank' || e.ctrlKey || e.metaKey)) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    let href = link.href;
+                    newTabUrl(href);
+                }
+            },true);
+        } catch (err) {
+            console.log('cannot intercept iframe clicks (cors):',err);
+        }
+    });
+}
+
+function newTabUrl(url) {
+    tabCount++;
+    const tabBar = document.getElementById('tabBar');
+    const ntBtn = document.getElementById('ntBtn');
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    const newTab = document.createElement('div');
+    newTab.className='tab active';
+    newTab.dataset.tabId = tabCount;
+    newTab.innerHTML = `
+    <div class="tab-fav">
+        <i data-lucide="globe"></i>
+    </div>
+    <span class="tab-tl">Loading...</span>
+    <div class="tab-cl">
+        <i data-lucide="x"></i>
+    </div>`;
+    tabBar.insertBefore(newTab,ntBtn);
+    lucide.createIcons();
+    addTL(newTab);
+    tabs[tabCount] = {
+        url:url,
+        title:'Loading...',
+        iframe:null,
+        isFirst:true,
+        cgf:false,
+    };
+    loadWebsite(url);
+}
+
 function renderBms() {
     const container = document.getElementById('bmContainer');
     container.innerHTML = '';
@@ -569,6 +617,7 @@ async function loadWebsite(url) {
         iframe.src = src;
         iframe.dataset.tabId = tabId;
         cArea.appendChild(iframe);
+        setupIntercept(iframe,tabId);
         tabs[tabId] = {
             url: fixedurl,
             title: url,
