@@ -98,7 +98,7 @@ function setupIntercept(iframe,tabId) {
                 }
             },true);
         } catch (err) {
-            console.log('cannot intercept iframe clicks (cors):',err);
+            console.log('cannot intercept iframe clicks (cors?):',err);
         }
     });
 }
@@ -407,6 +407,7 @@ function startURLM(iframe,tabId) {
                         tabs[tabId].cgf = false;
                         updNavBtns();
                     }
+                    updTabFavicon(iframe,tabId);
                 }
                 lastUrl = decodedUrl;
                 if (document.activeElement !== urlInput) {
@@ -417,16 +418,7 @@ function startURLM(iframe,tabId) {
                 }
                 updLIC(decodedUrl);
                 tabs[tabId].url = decodedUrl;
-                try {
-                    let urlObj = new URL(decodedUrl);
-                    if (activeTab) {
-                        activeTab.querySelector('.tab-tl').textContent = urlObj.hostname;
-                    }
-                } catch (e) {
-                    if (activeTab) {
-                        activeTab.querySelector('.tab-tl').textContent = decodedUrl;
-                    }
-                }
+                updTitle(iframe,tabId);
             }
         } catch (e) {
             if (tabs[tabId] && tabs[tabId].url) {
@@ -476,6 +468,20 @@ function addTL(tab) {
             swTab(tab.dataset.tabId);
         }
     });
+}
+
+function updTitle(iframe,tabId) {
+    try {
+        const iframeDoc = iframe.contentWindow.document;
+        const pageTitle=iframeDoc.title;
+        const tab=document.querySelector(`.tab[data-tab-id="${tabId}"]`);
+        if (tab&&pageTitle) {
+            tab.querySelector('.tab-tl').textContent=pageTitle;
+            tabs[tabId].title=pageTitle;
+        }
+    } catch (err) {
+        console.log('couldnt get title (cors?)',err);
+    }
 }
 
 document.querySelectorAll('.tab').forEach(addTL);
@@ -565,6 +571,51 @@ document.getElementById('fwBtn').addEventListener('click', () => {
     }
 });
 
+function updTabFavicon(iframe,tabId) {
+    try {
+        const iframeDoc = iframe.contentWindow.document;
+        let faviconUrl = null;
+        const iconLink=iframeDoc.querySelector('link[rel="icon"],link[rel="shortcut icon"],link[rel="apple-touch-icon"]');
+        if (iconLink && iconLink.href) {
+            faviconUrl=iconLink.href;
+        }
+        if (!faviconUrl) {
+            try {
+                const url=new URL(iframe.contentWindow.location.href);
+                if (url.pathname.includes(__uv$config.prefix)) {
+                    let encodedUrl = url.pathname.split(__uv$config.prefix)[1];
+                    let decodedUrl= __uv$config.decodeUrl(encodedUrl);
+                    let realUrl=new URL(decodedUrl);
+                    faviconUrl = `${realUrl.origin}/favicon.ico`;
+                }
+            } catch (e) {
+                console.log('couldnt get favicon',e);
+            }
+        }
+        if (faviconUrl) {
+            const tab = document.querySelector(`.tab[data-tab-id="${tabId}"]`);
+            if (tab) {
+                const favCont = tab.querySelector('.tab-fav');
+                const favImg = document.createElement('img');
+                favImg.src = faviconUrl;
+                favImg.style.width='16px';
+                favImg.style.height='16px';
+                favImg.style.objectFit='contain';
+                favImg.onload = ()=>{
+                    favCont.innerHTML='';
+                    favCont.appendChild(favImg);
+                };
+                favImg.onerror = ()=>{
+                    favCont.innerHTML='<i data-lucide="globe"></i>';
+                    lucide.createIcons();
+                };
+            }
+        }
+    } catch (err) {
+        console.log('cant access iframe to get fav',err);
+    }
+}
+
 // its proxin' time.
 
 function search(input) {
@@ -617,7 +668,7 @@ async function loadWebsite(url) {
         iframe.src = src;
         iframe.dataset.tabId = tabId;
         cArea.appendChild(iframe);
-        setupIntercept(iframe,tabId);
+        setupIntercept(iframe,tabId);   
         tabs[tabId] = {
             url: fixedurl,
             title: url,
