@@ -21,7 +21,7 @@ async function registerSW() {
     if (!navigator.serviceWorker) {
         throw new Error("browser doesnt support sw");
     }
-    await navigator.serviceWorker.register('/uv/uv.sw.js');
+    await navigator.serviceWorker.register('/uv/sw.js');
 }
 
 async function initProxy() {
