@@ -619,7 +619,7 @@ function updTabFavicon(iframe,tabId) {
 // its proxin' time.
 
 function search(input) {
-    let template = "https://www.google.com/search?q=%s";
+    let template = "https://www.bing.com/search?q=%s";
     try {
         return new URL(input).toString();
     } catch (err) {}
@@ -923,6 +923,8 @@ function loadWebsiteInternal(url,title) {
         kryptonUrl = 'krypton://history';
     } else if (url === './bookmarks.html') {
         kryptonUrl = 'krypton://bookmarks';
+    } else if (url === './games.html') {
+        kryptonUrl = 'krypton://games'
     }
     if (tabs[tabId] && tabs[tabId].iframe) {
         tabs[tabId].iframe.src = url;
@@ -969,8 +971,7 @@ document.querySelectorAll('.shortcut').forEach(shortcut => {
         if (title === 'bookmarks') {
             loadWebsiteInternal('./bookmarks.html', 'Bookmarks');
         } else if (title === 'games') {
-            //replace with real functionality when we get to that point
-            alert("not implemented yet (check out bookmarks though) :(");
+            loadWebsiteInternal('./games.html', 'Games');
         } else if (title === 'apps') {
             //same here
             alert("not implemented yet (check out bookmarks though) :(");
