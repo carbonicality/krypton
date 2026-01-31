@@ -23,9 +23,9 @@
                                 <i data-lucide="search"></i>
                                 <span>search</span>
                             </div>
-                            <div class="nav-item" data-sec="browser">
+                            <div class="nav-item" data-sec="proxy">
                                 <i data-lucide="shield"></i>
-                                <span>browser</span>
+                                <span>proxy</span>
                             </div>
                             <div class="nav-item" data-sec="appearance">
                                 <i data-lucide="palette"></i>
@@ -58,10 +58,28 @@
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+                        </section>
+                        <section class="setsection" id="proxy">
+                            <h2>proxy settings</h2>
+                            <div class="setgroup">
+                                <div class="setitem">
+                                    <div class="setinfo">
+                                        <div class="setlabel">proxy backend</div>
+                                        <div class="setdesc">select the backend used</div>
+                                    </div>
+                                    <div class="setcontrol">
+                                        <div class="seldropdown">
+                                            <select id="proxyType">
+                                                <option value="uv">Ultraviolet</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
                                 <div class="setitem">
                                     <div class="setinfo">
                                         <div class="setlabel">wisp server</div>
-                                        <div class="setdesc">set a wisp server</div>
+                                        <div class="setdesc">use a custom wisp server</div>
                                     </div>
                                     <div class="setcontrol">
                                         <div class="input-field">
@@ -71,12 +89,71 @@
                                 </div>
                             </div>
                         </section>
+                        <section class="setsection" id="appearance">
+                            <h2>appearance</h2>
+                            <div class="setgroup">
+                                <div class="setitem">
+                                    <div class="setinfo">
+                                        <div class="setlabel">theme</div>
+                                        <div class="setdesc">change the look of the site</div>
+                                    </div>
+                                    <div class="setcontrol">
+                                        <div class="seldropdown">
+                                            <select id="themeType">
+                                                <option value="default">default blue</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                        <section class="setsection" id="privacy">
+                            <h2>privacy</h2>
+                            <div class="setgroup">
+                                <div class="setitem">
+                                    <div class="setinfo">
+                                        <div class="setlabel">clear all data</div>
+                                        <div class="setdesc">remove all history, bookmarks and settings</div>
+                                    </div>
+                                    <div class="setcontrol">
+                                        <button class="btn" id="sudo-rm">clear all data</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                        <section class="setsection" id="credits">
+                            <h2>credits</h2>
+                            <div class="cred-grid">
+                                <div class="cred-card">
+                                    <div class="cred-title">Ultraviolet</div>
+                                    <div class="cred-desc">A sophisticated proxy used for evading internet censorship or accessing websites in a controlled sandbox using the power of service-workers.</div>
+                                    <a href="https://github.com/titaniumnetwork-dev/Ultraviolet" class="cred-link" target="_blank">
+                                        <i data-lucide="external-link"></i>
+                                        <span>View on GitHub</span>
+                                    </a>
+                                </div>
+                                <div class="cred-card">
+                                    <div class="cred-title">Baremux</div>
+                                    <div class="cred-desc">A system for managing http transports in a project such as Ultraviolet.</div>
+                                    <a href="https://github.com/MercuryWorkshop/bare-mux" class="cred-link" target="_blank">
+                                        <i data-lucide="external-link"></i>
+                                        <span>View on GitHub</span>
+                                    </a>
+                                </div>
+                                <div class="cred-card">
+                                    <div class="cred-title">particles.js</div>
+                                    <div class="cred-desc">A lightweight JavaScript library for creating particles</div>
+                                    <a href="https://github.com/VincentGarreau/particles.js/" class="cred-link" target="_blank">
+                                        <i data-lucide="external-link"></i>
+                                        <span>View on GitHub</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </section>
                     </main>
                 </div>
             </div>
         </div>
-        <script>
-            lucide.createIcons();
-        </script>
+        <script src="./scripts/settings.js"></script>
     </body>
 </html>
