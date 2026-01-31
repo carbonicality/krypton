@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="./styles/settings.css">
+        <script src="https://unpkg.com/lucide@latest"></script>
+        <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    </head>
+    <body>
+        <div id="particles-js"></div>
+        <div class="settainer">
+            <div style="width:100%;">
+                <header class="sethdr">
+                    <h1>settings</h1>
+                    <p>change your preferences here</p>
+                </header>
+                <div style="display:flex;gap:24px;">
+                    <aside class="sidebar">
+                        <nav class="sidebar-nav">
+                            <div class="nav-item active" data-sec="search">
+                                <i data-lucide="search"></i>
+                                <span>search</span>
+                            </div>
+                            <div class="nav-item" data-sec="browser">
+                                <i data-lucide="shield"></i>
+                                <span>browser</span>
+                            </div>
+                            <div class="nav-item" data-sec="appearance">
+                                <i data-lucide="palette"></i>
+                                <span>appearance</span>
+                            </div>
+                            <div class="nav-item" data-sec="privacy">
+                                <i data-lucide="lock"></i>
+                                <span>privacy</span>
+                            </div>
+                            <div class="nav-item" data-sec="credits">
+                                <i data-lucide="heart"></i>
+                                <span>credits</span>
+                            </div>
+                        </nav>
+                    </aside>
+                    <main class="setcontent">
+                        <section class="setsection active" id="search">
+                            <h2>search settings</h2>
+                            <div class="setgroup">
+                                <div class="setitem">
+                                    <div class="setinfo">
+                                        <div class="setlabel">default search engine</div>
+                                        <div class="setdesc">choose your preferred search engine</div>
+                                    </div>
+                                    <div class="setcontrol">
+                                        <div class="seldropdown">
+                                            <select id="searchEngine">
+                                                <option value="bing">Bing</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="setitem">
+                                    <div class="setinfo">
+                                        <div class="setlabel">wisp server</div>
+                                        <div class="setdesc">set a wisp server</div>
+                                    </div>
+                                    <div class="setcontrol">
+                                        <div class="input-field">
+                                            <input type="text" id="wispUrl" placeholder="wss://wisp.example.com" value="wss://wisp.mercurywork.shop">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </main>
+                </div>
+            </div>
+        </div>
+        <script>
+            lucide.createIcons();
+        </script>
+    </body>
+</html>
