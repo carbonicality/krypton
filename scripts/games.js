@@ -1,9 +1,9 @@
 lucide.createIcons();
 const games=[
     {
-        name:'test',
-        icon:'idk',
-        url:'https://example.com'
+        name:'1',
+        icon:'https://truffled.lol/png/games/1.webp',
+        url:'../games/1.html'
     }
 ];
 let fGames = [...games];
@@ -18,9 +18,32 @@ function createGC(game) { //create GSC perhaps???????????? cr50 ti50 oooh
     <div class="game-nm">${game.name}</div>
     `;
     card.addEventListener('click',()=>{
-        window.parent.postMessage({type:'loadUrl',url:game.url},'*');
+        openGame(game);
     });
     return card;
+}
+
+function openGame(game) {
+    sessionStorage.setItem('rtg','true');
+    window.location.href=game.url;
+}
+
+function initBack() {
+    const isMenu = document.getElementById('gameGrid') !== null;
+    if (!isMenu) {
+        const backBtn=document.createElement('div');
+        backBtn.className='back-btn';
+        backBtn.innerHTML =`
+        <div class="back-btn-in">
+            <i data-lucide="x"></i>
+            <span class="back-txt">Back</span>
+        </div>`;
+        document.body.appendChild(backBtn);
+        lucide.createIcons();
+        backBtn.addEventListener('click',()=>{
+            window.history.back();
+        });
+    }
 }
 
 function renderGames() {
@@ -55,10 +78,13 @@ function searchGames(query) {
 }
 
 const searchInput = document.getElementById('gameSearch');
-searchInput.addEventListener('input',(e)=>{
-    searchGames(e.target.value.trim());
-});
-renderGames();
+if (searchInput) {
+    searchInput.addEventListener('input',(e)=>{
+        searchGames(e.target.value.trim());
+    });
+    renderGames();
+}
+initBack();
 
 // beautifying stuff
 function initParticles() {
