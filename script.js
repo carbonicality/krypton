@@ -643,6 +643,14 @@ async function loadWebsite(url) {
         loadWebsiteInternal('./history.html','History');
         return;
     }
+    if (url.toLowerCase()=='krypton://settings') {
+        loadWebsiteInternal('./settings.html','Settings');
+        return;
+    }
+    if (url.toLowerCase()=='krypton://games') {
+        loadWebsiteInternal('./games.html','Games');
+        return;
+    }
     try{
         await initProxy();
     } catch (err) {
@@ -925,6 +933,8 @@ function loadWebsiteInternal(url,title) {
         kryptonUrl = 'krypton://bookmarks';
     } else if (url === './games.html') {
         kryptonUrl = 'krypton://games'
+    } else if (url === './settings.html') {
+        kryptonUrl = 'krypton://settings'
     }
     if (tabs[tabId] && tabs[tabId].iframe) {
         tabs[tabId].iframe.src = url;
@@ -976,8 +986,7 @@ document.querySelectorAll('.shortcut').forEach(shortcut => {
             //same here
             alert("not implemented yet (check out bookmarks though) :(");
         } else if (title === 'settings') {
-            //and same here
-            alert("not implemented yet (check out bookmarks though) :(");
+            loadWebsiteInternal('./settings.html','Settings');
         }
     });
 });
