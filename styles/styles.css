@@ -486,7 +486,7 @@ svg {
     width: 100%;
     height: 100%;
     border: none;
-    background: #fff;
+    background: #0f0f0f;
     animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 999;
 }
@@ -818,4 +818,71 @@ svg {
     color: #e0e0e0;
     font-size: 12px;
     font-weight: 500;
+}
+
+#loadOvr {
+    position:absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background:rgba(15,15,15,0.95);
+    backdrop-filter:blur(10px);
+    display: none;
+    align-items: center;
+    justify-content:center;
+    flex-direction: column;
+    gap:20px;
+    z-index: 2000;
+    animation: fadeIn 0.2s ease;
+}
+
+#loadOvr.show {
+    display:flex;
+}
+
+.loader {
+    width: 48px;
+    height: 48px;
+    border: 5px solid #3c6291;
+    border-bottom-color: #60a5fa;
+    border-radius: 50%;
+    display: inline-block;
+    box-sizing: border-box;
+    animation: rotation 1s linear infinite;
+}
+
+@keyframes rotation {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.load-txt {
+    color:#c6e0ff;
+    font-size: 16px;
+}
+
+#progBarCont {
+    height:3px;
+    background:#0a0a0a;
+    border-bottom: 1px solid #1a1a1a;
+    position:relative;
+    overflow:hidden;
+    display: none;
+}
+
+#progBarCont.show {
+    display: block;
+}
+
+#progBar {
+    height: 100%;
+    background: linear-gradient(90deg, #60a5fa, #93d5fd);
+    width:0%;
+    transition: width 0.3s ease;
+    box-shadow: 0 0 10px rgba(96,165,250,0.5);
 }

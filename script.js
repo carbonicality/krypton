@@ -670,13 +670,14 @@ async function loadWebsite(url) {
     if (tabs[tabId] && tabs[tabId].iframe) {
         tabs[tabId].iframe.src = src;
         tabs[tabId].url = fixedurl;
+        monitorLoad(tabs[tabId].iframe,tabId);
     } else {
         const iframe = document.createElement('iframe');
         iframe.className = 'bframe';
         iframe.src = src;
         iframe.dataset.tabId = tabId;
         cArea.appendChild(iframe);
-        setupIntercept(iframe,tabId);   
+        setupIntercept(iframe,tabId);
         tabs[tabId] = {
             url: fixedurl,
             title: url,
@@ -689,6 +690,7 @@ async function loadWebsite(url) {
                 frame.style.display = 'none';
             }
         });
+        monitorLoad(iframe,tabId);
     }
     document.getElementById('urlInput').value = fixedurl;
     urlDisplay.innerHTML = formatUrl(fixedurl);
@@ -719,6 +721,69 @@ async function loadWebsite(url) {
 }
 
 updLIC('krypton://new-tab');
+
+function monitorLoad(iframe,tabId) {
+    const loadOvr = document.getElementById('loadOvr');
+    const progBar = document.getElementById('progBar');
+    const progBarCont = document.getElementById('progBarCont');
+    loadOvr.classList.add('show');
+    progBarCont.classList.add('show');
+    progBar.style.width='10%';
+    let startTime = Date.now();
+    let progVal = 30;
+    let loadComplete = false;
+    const progInterval = setInterval(()=>{
+        if (loadComplete) {
+            clearInterval(progInterval);
+            return;
+        }
+        if (progVal <90) {
+            progVal += (90-progVal)*0.1;
+            progBar.style.width=`${progVal}%`;
+        }
+    },200);
+    const iframeReady = setInterval(()=>{
+        try {
+            const iframeDoc = iframe.contentWindow.document;
+            if (iframeDoc.readyState==='complete') {
+                const hasContent= iframeDoc.body && (iframeDoc.body.children.length > 0 || iframeDoc.body.textContent.trim().length>0);
+                if (hasContent) {
+                    completeLoad();
+                }
+            }
+        } catch (e) {
+            console.log('loaded cors, we shouldnt get this though');
+        }
+    },200);
+    //max time to load, 8s
+    const maxTimeout = setTimeout(()=>{
+        completeLoad();
+    },8000);
+    //detect net idle
+    let lastActivity = Date.now();
+    const actCheck = setInterval(()=>{
+        const tsAct = Date.now() - lastActivity;
+        if (tsAct>1000 && Date.now()-startTime>1500) {
+            completeLoad();
+        }
+    },500);
+    function completeLoad() {
+        if (loadComplete) return;
+        loadComplete = true;
+        clearInterval(progInterval);
+        clearInterval(iframeReady);
+        clearInterval(actCheck);
+        clearTimeout(maxTimeout);
+        progBar.style.width='100%';
+        setTimeout(()=>{
+            loadOvr.classList.remove('show');
+            setTimeout(()=>{
+                progBarCont.classList.remove('show');
+                progBar.style.width = '0%';
+            },300);
+        },200);
+    }
+}
 
 // background beautifulising particle stuff
 function initParticles() { // bro this stupid function is so annoying bro this was so hard to make there was SO MUCH TRIAL AND ERROR JUST FOR THIS
