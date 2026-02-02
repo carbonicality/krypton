@@ -29,7 +29,7 @@ async function authB2() {
 async function fetchGameB2(gameName) {
     try {
         const authData =await authB2();
-        const dlUrl = `${authData.downloadUrl}/file/${B2_BUCKET}/games/${gameName}.html`;
+        const dlUrl = `${authData.downloadUrl}/file/${B2_BUCKET}/${gameName}.html`;
         const res = await fetch(dlUrl,{
             headers: {
                 'Authorization': authData.authorizationToken
