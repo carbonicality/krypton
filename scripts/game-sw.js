@@ -142,7 +142,9 @@ self.addEventListener('message',async (event) => {
 
 self.addEventListener('fetch',(event)=>{
     const url = new URL(event.request.url);
+    console.log('sw inter',url.pathname);
     if (url.pathname.startsWith('/b2-game/')) {
+        console.log('matched /b2-game/');
         event.respondWith(
             (async ()=>{
                 const gameName = url.pathname.replace('/b2-game/','').replace('.html','');

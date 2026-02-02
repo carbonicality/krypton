@@ -2,6 +2,11 @@ lucide.createIcons();
 let games=[];
 let fGames=[];
 
+console.log('sw controlled:',!!navigator.serviceWorker.controller);
+if (navigator.serviceWorker.controller) {
+    console.log('sw controlling from',navigator.serviceWorker.controller.scriptURL);
+}
+
 async function fetchGames() {
     try {
         const res=await fetch('../files/games.json');
@@ -31,11 +36,20 @@ function createGC(game) { //create GSC perhaps???????????? cr50 ti50 oooh
 }
 
 async function openGame(game) {
-    const res = await fetch(`/b2-game/${game.name}.html`);
-    const html = await res.text();
-    document.open();
-    document.write(html);
-    document.close();
+    console.log('trying to fetch',`/b2-game/${game.name}.html`);
+    try {
+        const res = await fetch(`/b2-game/${game.name}.html`);
+        console.log('fetch res status',res.status);
+        console.log('fetch res hdrs', res.headers);
+        const html = await res.text();
+        console.log('html length',html.length);
+        console.log('first 200',html.substring(0,200));
+        document.open();
+        document.write(html);
+        document.close();
+    } catch (error) {
+        console.error('err fetching game',error);
+    }
 }
 
 function initBack() {
