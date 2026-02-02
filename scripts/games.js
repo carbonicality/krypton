@@ -33,9 +33,9 @@ function createGC(game) { //create GSC perhaps???????????? cr50 ti50 oooh
 async function openGame(game) {
     const res = await fetch(`/b2-game/${game.name}.html`);
     const html = await res.text();
-    const blob = new Blob([html],{type:'text/html'});
-    const url = URL.createObjectURL(blob);
-    window.location.href=url;
+    document.open();
+    document.write(html);
+    document.close();
 }
 
 function initBack() {
