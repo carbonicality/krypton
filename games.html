@@ -42,7 +42,7 @@
         <script src="./scripts/games.js"></script>
         <script>
             if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('./scripts/game-sw.js')
+                navigator.serviceWorker.register('./game-sw.js')
                 .then(reg => console.log('gamesw registered', reg))
                 .catch(err => console.error('gamesw reg failed :(',err));
             }
