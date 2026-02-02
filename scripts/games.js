@@ -2,28 +2,6 @@ lucide.createIcons();
 let games=[];
 let fGames=[];
 
-const B2_BUCKET='krypton-games';
-// i know this is insecure. i dont care
-const B2_KEY_ID='0033f2bce0a5fa90000000001';
-const B2_APP_KEY='K003a7J1GbTOPQkyNkc8/Uh+M9aVcwU';
-
-async function fetchGamesB2(fileName) {
-    const authUrl='https://api.backblazeb2.com/b2api/v2/b2_authorize_account';
-    const authResponse=await fetch(authUrl,{
-        headers: {
-            'Authorization':'Basic ' + btoa(B2_KEY_ID+':'+B2_APP_KEY)
-        }
-    });
-    const authData =await authResponse.json();
-    const dlUrl =`${authData.dlUrl}/file/${B2_BUCKET}/${fileName}`;
-    const res = await fetch(downloadUrl,{
-        headers: {
-            'Authorization':authData.authorizationToken
-        }
-    });
-    return await res.text();
-}
-
 async function fetchGames() {
     try {
         const res=await fetch('../files/games.json');
@@ -53,7 +31,8 @@ function createGC(game) { //create GSC perhaps???????????? cr50 ti50 oooh
 }
 
 async function openGame(game) {
-    const html = await fetchGamesB2(`games/${game.name}.html`);
+    const res = await fetch(`/b2-game/${game.name}.html`);
+    const html = await res.text();
     const blob = new Blob([html],{type:'text/html'});
     const url = URL.createObjectURL(blob);
     window.location.href=url;

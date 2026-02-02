@@ -1,5 +1,9 @@
 const CACHE_NAME='krypton-games';
 const GHOST='https://krypton-games.surge.sh';
+const B2_BUCKET='krypton-games';
+const B2_KEY_ID='0033f2bce0a5fa90000000001';
+const B2_APP_KEY='K003a7J1GbTOPQkyNkc8/Uh+M9aVcwU';
+importScripts('../uv/uv.config.js');
 
 self.addEventListener('install',(event)=>{
     console.log('gamesw installed');
@@ -10,6 +14,35 @@ self.addEventListener('activate',(event)=>{
     console.log('gamesw activated');
     event.waitUntil(clients.claim());
 });
+
+async function authB2() {
+    const authUrl = 'https://api.backblazeb2.com/b2api/v2/b2_authorize_account';
+    const creds = btoa(B2_KEY_ID+':'+B2_APP_KEY);
+    const proxyUrl = __uv$config.prefix+__uv$config.encodeUrl(authUrl);
+    const res = await fetch(proxyUrl,{
+        headers: {
+            'Authorization': 'Basic ' + creds
+        }
+    });
+    return await res.json();
+}
+
+async function fetchGameB2(gameName) {
+    try {
+        const authData = await authB2();
+        const dlUrl = `${authData.downloadUrl}/file/${B2_BUCKET}/games/${gameName}.html`;
+        const proxyUrl = __uv$config.prefix+__uv$config.encodeUrl(dlUrl);
+        const res = await fetch(proxyUrl,{
+            headers: {
+                'Authorization': authData.authorizationToken
+            }
+        });
+        return await res.text();
+    } catch (error) {
+        console.error('failed to fetch games',error);
+        throw error;
+    }
+}
 
 self.addEventListener('message',async (event) => {
     if (event.data.type==='GCACHE') {
@@ -111,6 +144,27 @@ self.addEventListener('message',async (event) => {
 
 self.addEventListener('fetch',(event)=>{
     const url = new URL(event.request.url);
+    if (url.pathname.startsWith('/b2-game/')) {
+        event.respondWith(
+            (async ()=>{
+                const gameName = url.pathname.replace('/b2-game/','').replace('.html','');
+                const cached = await caches.match(`/games/${gameName}.html`);
+                if (cached) {
+                    console.log('serving from cache',gameName);
+                    return cached;
+                }
+                console.log('fetching from b2',gameName);
+                const html = await fetchGameB2(gameName);
+                const cache = await caches.open(CACHE_NAME);
+                const res=new Response(html,{
+                    headers:{'Content-Type':'text/html'}
+                });
+                await cache.put(`/games/${gameName}.html`,res.clone());
+                return res;
+            })()
+        );
+        return;
+    }
     if (url.pathname.startsWith('/games/') && url.pathname.endsWith('.html')) {
         event.respondWith(
             caches.match(event.request).then(cResponse => {
