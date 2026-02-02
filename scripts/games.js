@@ -1,21 +1,50 @@
 lucide.createIcons();
-const games=[
-    {
-        name:'1',
-        icon:'https://truffled.lol/png/games/1.webp',
-        url:'../games/1.html'
+let games=[];
+let fGames=[];
+
+const B2_BUCKET='krypton-games';
+// i know this is insecure. i dont care
+const B2_KEY_ID='0033f2bce0a5fa90000000001';
+const B2_APP_KEY='K003a7J1GbTOPQkyNkc8/Uh+M9aVcwU';
+
+async function fetchGamesB2(fileName) {
+    const authUrl='https://api.backblazeb2.com/b2api/v2/b2_authorize_account';
+    const authResponse=await fetch(authUrl,{
+        headers: {
+            'Authorization':'Basic ' + btoa(B2_KEY_ID+':'+B2_APP_KEY)
+        }
+    });
+    const authData =await authResponse.json();
+    const dlUrl =`${authData.dlUrl}/file/${B2_BUCKET}/${fileName}`;
+    const res = await fetch(downloadUrl,{
+        headers: {
+            'Authorization':authData.authorizationToken
+        }
+    });
+    return await res.text();
+}
+
+async function fetchGames() {
+    try {
+        const res=await fetch('../files/games.json');
+        games=await res.json();
+        fGames=[...games];
+        renderGames();
+    } catch (error) {
+        console.error('failed to load games',error);
     }
-];
-let fGames = [...games];
+}
 
 function createGC(game) { //create GSC perhaps???????????? cr50 ti50 oooh
     const card=document.createElement('div');
     card.className ='gcard';
+    const isCached = localStorage.getItem('krypton_games_cached') === 'true';
     card.innerHTML = `
     <div class="gicon">
         <img src="${game.icon}" alt="${game.name}">
     </div>
     <div class="game-nm">${game.name}</div>
+    ${isCached ? '<div class="cbadge"><i data-lucide="database"></i></div>':''}
     `;
     card.addEventListener('click',()=>{
         openGame(game);
@@ -23,9 +52,11 @@ function createGC(game) { //create GSC perhaps???????????? cr50 ti50 oooh
     return card;
 }
 
-function openGame(game) {
-    sessionStorage.setItem('rtg','true');
-    window.location.href=game.url;
+async function openGame(game) {
+    const html = await fetchGamesB2(`games/${game.name}.html`);
+    const blob = new Blob([html],{type:'text/html'});
+    const url = URL.createObjectURL(blob);
+    window.location.href=url;
 }
 
 function initBack() {
@@ -82,7 +113,7 @@ if (searchInput) {
     searchInput.addEventListener('input',(e)=>{
         searchGames(e.target.value.trim());
     });
-    renderGames();
+    fetchGames();
 }
 initBack();
 

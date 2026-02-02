@@ -1,0 +1,22 @@
+[
+    {
+        "name": "Hollow Knight",
+        "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS26xnNCHZavCZ5axWxGw37JSszae0k3tclrg&s",
+        "url": "https://krypton-games.surge.sh/games/hollow-knight.html"
+    },
+    {
+        "name": "OMORI",
+        "icon": "https://upload.wikimedia.org/wikipedia/en/thumb/c/cd/Omori_cover.jpg/250px-Omori_cover.jpg",
+        "url": "https://krypton-games.surge.sh/games/OMORI.html"
+    },
+    {
+        "name": "Ultrakill",
+        "icon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSc57SV8WT2qbGm7pC1gmf3YzqieQeE1MrXjw&s",
+        "url": "https://krypton-games.surge.sh/games/ultrakill.html"
+    },
+    {
+        "name": "Undertale",
+        "icon": "https://images.g2a.com/470x276/1x1x0/undertale-pc-steam-key-global-i10000005286007/590f06b45bafe37b970cbcbc",
+        "url": "https://krypton-games.surge.sh/games/undertale.html"
+    }
+]
