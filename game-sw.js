@@ -18,7 +18,8 @@ self.addEventListener('activate',(event)=>{
 async function authB2() {
     const authUrl = 'https://api.backblazeb2.com/b2api/v2/b2_authorize_account';
     const creds = btoa(B2_KEY_ID+':'+B2_APP_KEY);
-    const res = await fetch(authUrl,{
+    const proxyUrl = __uv$config.prefix+__uv$config.encodeUrl(authUrl);
+    const res = await fetch(proxyUrl,{
         headers:{
             'Authorization': 'Basic '+creds
         }
@@ -28,16 +29,17 @@ async function authB2() {
 
 async function fetchGameB2(gameName) {
     try {
-        const authData =await authB2();
-        const dlUrl = `${authData.downloadUrl}/file/${B2_BUCKET}/${gameName}.html`;
-        const res = await fetch(dlUrl,{
-            headers: {
+        const authData = await authB2();
+        const dl= `${authData.downloadUrl}/file/${B2_BUCKET}/${gameName}.html`;
+        const proxyUrl = __uv$config.prefix+__uv$config.encodeUrl(dlUrl);
+        const res = await fetch(proxyUrl,{
+            headers:{
                 'Authorization': authData.authorizationToken
             }
         });
         return await res.text();
     } catch (error) {
-        console.error('failed to fetch b2 game',error);
+        console.error('failed to fetch b2',error);
         throw error;
     }
 }
