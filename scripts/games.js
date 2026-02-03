@@ -3,7 +3,7 @@ let games=[];
 let fGames=[];
 
 const COVER_URL = "https://cdn.jsdelivr.net/gh/gn-math/covers@main";
-const HTML_URL = "https://cdn.jsdelivrnet/gh/gn-math/html@main";
+const HTML_URL = "https://cdn.jsdelivr.net/gh/gn-math/html@main";
 
 console.log('sw controlled:',!!navigator.serviceWorker.controller);
 if (navigator.serviceWorker.controller) {
