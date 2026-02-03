@@ -2,6 +2,9 @@ lucide.createIcons();
 let games=[];
 let fGames=[];
 
+const COVER_URL = "https://cdn.jsdelivr.net/gh/gn-math/covers@main";
+const HTML_URL = "https://cdn.jsdelivrnet/gh/gn-math/html@main";
+
 console.log('sw controlled:',!!navigator.serviceWorker.controller);
 if (navigator.serviceWorker.controller) {
     console.log('sw controlling from',navigator.serviceWorker.controller.scriptURL);
@@ -9,17 +12,30 @@ if (navigator.serviceWorker.controller) {
 
 async function fetchGames() {
     try {
-        const res = await fetch('https://cdn.jsdelivr.net/gh/gn-math/assets@main/zones.json');
+        let zonesUrl = "https://cdn.jsdelivr.net/gh/gn-math/assets@main/zones.json";
+        try {
+            const sharesponse = await fetch("https://api.github.com/repos/gn-math/assets/commits?t="+Date.now());
+            if (sharesponse && sharesponse.status===200) {
+                const shajson=await sharesponse.json();
+                const sha=shajson[0]['sha'];
+                if (sha) {
+                    zonesUrl =`https://cdn.jsdelivr.net/gh/gn-math/assets@${sha}/zones.json`;
+                }
+            }
+        } catch (error) {
+            console.log('using default zones');
+        }
+        const res = await fetch(zonesUrl+"?t="+Date.now());
         const gnMathZones = await res.json();
         games = gnMathZones.map(zone=>({
             name:zone.name,
-            icon:zone.cover.replace("{COVER_URL}","https://cdn.jsdelivr.net/gh/gn-math/covers@main").replace("{HTML_URL}", "https://cdn.jsdelivr.net/gh/gn-math/html@main"),
-            url:zone.url.replace("{HTML_URL}","https://cdn.jsdelivr.net/gh/gn-math/html@main").replace("{COVER_URL}","https://cdn.jsdelivr.net/gh/gn-math/covers@main")
+            icon:zone.cover.replace("{COVER_URL}",COVER_URL).replace("{HTML_URL}",HTML_URL),
+            url:zone.url.replace("{HTML_URL}",HTML_URL).replace("{COVER_URL}",COVER_URL)
         }));
         fGames=[...games];
         renderGames();
     } catch (error) {
-        console.error("failed to load games",error);
+        console.error('failed to load games',error);
     }
 }
 
@@ -42,13 +58,28 @@ function createGC(game) { //create GSC perhaps???????????? cr50 ti50 oooh
 
 async function openGame(game) {
     try {
-        const res = await fetch(game.url);
+        //handle externals, open in new
+        if (game.url.startsWith("http") && !game.url.includes("cdn.jsdelivr.net")) {
+            window.open(game.url,"_blank");
+            return;
+        }
+        const res = await fetch(game.url+"?t="+Date.now());
         const html= await res.text();
         document.open();
         document.write(html);
         document.close();
+        document.querySelectorAll('script').forEach(oScript=>{ // more like oblock wow badman tuff wow wow 
+            const nScript = document.createElement('script');
+            if (oScript.src){
+                nScript.src=oScript.src;
+            } else {
+                nScript.textContent=oScript.textContent;
+            }
+            document.body.appendChild(nScript);
+        });
     } catch (error) {
-        console.error('err fetching game',error);
+        console.error('err fetching game:(',error);
+        alert('failed to load game'+error.message);
     }
 }
 
