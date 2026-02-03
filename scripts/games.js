@@ -18,7 +18,6 @@ async function fetchGames() {
         }));
         fGames=[...games];
         renderGames();
-        await cacheGames();
     } catch (error) {
         console.error("failed to load games",error);
     }
