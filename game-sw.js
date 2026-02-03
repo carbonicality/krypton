@@ -94,7 +94,7 @@ self.addEventListener('fetch',(event)=>{
                     <script>
                     const backBtn = document.createElement('div');
                     backBtn.className='back-btn';
-                    backBtn.innerHTML=\
+                    backBtn.innerHTML=\`
                     <div class="back-btn-in">
                         <i data-lucide="x"></i>
                         <span class="back-txt">Back</span>
