@@ -68,18 +68,11 @@ async function openGame(game) {
         document.open();
         document.write(html);
         document.close();
-        document.querySelectorAll('script').forEach(oScript=>{ // more like oblock wow badman tuff wow wow 
-            const nScript = document.createElement('script');
-            if (oScript.src){
-                nScript.src=oScript.src;
-            } else {
-                nScript.textContent=oScript.textContent;
-            }
-            document.body.appendChild(nScript);
-        });
     } catch (error) {
         console.error('err fetching game:(',error);
-        alert('failed to load game'+error.message);
+        if (error.message.includes('HTTP') ||error.message.includes('fetch')){
+            alert('failed to load game'+error.message);
+        }
     }
 }
 
