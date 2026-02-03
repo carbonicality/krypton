@@ -9,12 +9,18 @@ if (navigator.serviceWorker.controller) {
 
 async function fetchGames() {
     try {
-        const res=await fetch('../files/games.json');
-        games=await res.json();
+        const res = await fetch('https://cdn.jsdelivr.net/gh/gn-math/assets@main/zones.json');
+        const gnMathZones = await res.json();
+        games = gnMathZones.map(zone=>({
+            name:zone.name,
+            icon:zone.cover.replace("{COVER_URL}","https://cdn.jsdelivr.net/gh/gn-math/covers@main").replace("{HTML_URL}", "https://cdn.jsdelivr.net/gh/gn-math/html@main"),
+            url:zone.url.replace("{HTML_URL}","https://cdn.jsdelivr.net/gh/gn-math/html@main").replace("{COVER_URL}","https://cdn.jsdelivr.net/gh/gn-math/covers@main")
+        }));
         fGames=[...games];
         renderGames();
+        await cacheGames();
     } catch (error) {
-        console.error('failed to load games',error);
+        console.error("failed to load games",error);
     }
 }
 
@@ -36,14 +42,9 @@ function createGC(game) { //create GSC perhaps???????????? cr50 ti50 oooh
 }
 
 async function openGame(game) {
-    console.log('trying to fetch',`/b2-game/${game.name}.html`);
     try {
-        const res = await fetch(`/b2-game/${game.name}.html`);
-        console.log('fetch res status',res.status);
-        console.log('fetch res hdrs', res.headers);
-        const html = await res.text();
-        console.log('html length',html.length);
-        console.log('first 200',html.substring(0,200));
+        const res = await fetch(game.url);
+        const html= await res.text();
         document.open();
         document.write(html);
         document.close();

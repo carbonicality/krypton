@@ -15,45 +15,12 @@ self.addEventListener('activate',(event)=>{
     event.waitUntil(clients.claim());
 });
 
-async function authB2() {
-    const authUrl = 'https://api.backblazeb2.com/b2api/v2/b2_authorize_account';
-    const creds = btoa(B2_KEY_ID+':'+B2_APP_KEY);
-    const proxyUrl = __uv$config.prefix+__uv$config.encodeUrl(authUrl);
-    const res = await fetch(proxyUrl,{
-        headers:{
-            'Authorization': 'Basic '+creds
-        }
-    });
-    return await res.json();
-}
-
-async function fetchGameB2(gameName) {
-    try {
-        const authData = await authB2();
-        const dl= `${authData.downloadUrl}/file/${B2_BUCKET}/${gameName}.html`;
-        const proxyUrl = __uv$config.prefix+__uv$config.encodeUrl(dlUrl);
-        const res = await fetch(proxyUrl,{
-            headers:{
-                'Authorization': authData.authorizationToken
-            }
-        });
-        return await res.text();
-    } catch (error) {
-        console.error('failed to fetch b2',error);
-        throw error;
-    }
-}
-
-self.addEventListener('message',async (event) => {
-    if (event.data.type==='GCACHE') {
-        const gamesList = event.data.games;
-        const uvConfig=event.data.uvPrefix;
-        const cache = await caches.open(CACHE_NAME);
-        importScripts('/uv/uv.config.js');
-        for (const game of gamesList) {
-            try {
-                const proxyUrl = __uv$config.prefix+__uv$config.encodeUrl(game.url);
-                const res = await fetch(proxyUrl);
+self.addEventListener('fetch',(event)=>{
+    const url = new URL(event.request.url);
+    if (url.hostname==='cdn.jsdelivr.net' && url.pathname.includes('/gn-math/html@main')) {
+        event.respondWith(
+            (async ()=>{
+                const res = await fetch(event.request);
                 const html = await res.text();
                 const modHtml = html.replace(
                     '</head>',
@@ -124,64 +91,28 @@ self.addEventListener('message',async (event) => {
                 ).replace(
                     '</body>',
                     `<script src="https://unpkg.com/lucide@latest"></script>
-<script src="../scripts/games.js"></script></body>`
+                    <script>
+                    const backBtn = document.createElement('div');
+                    backBtn.className='back-btn';
+                    backBtn.innerHTML=\
+                    <div class="back-btn-in">
+                        <i data-lucide="x"></i>
+                        <span class="back-txt">Back</span>
+                    </div>\`;
+                    document.body.appendChild(backBtn);
+                    lucide.createIcons();
+                    backBtn.addEventListener('click',()=>{
+                        window.history.back();
+                    });
+                    </script>
+                    </body>`
                 );
-                await cache.put(`/games/${game.name}.html`,new Response(modHtml,{
-                    headers:{'Content-Type':'text/html'}
-                }));
-                if (game.icon) {
-                    const iconRes = await fetch(game.icon);
-                    await cache.put(game.icon,iconRes);
-                }
-                console.log(`cached ${game.name}`);
-            } catch (error) {
-                console.error(`failed to cache ${game.name}`,error);
-            }
-        }
-        event.ports[0].postMessage({success: true});
-    }
-});
-
-self.addEventListener('fetch',(event)=>{
-    const url = new URL(event.request.url);
-    console.log('sw inter',url.pathname);
-    if (url.pathname.startsWith('/b2-game/')) {
-        console.log('matched /b2-game/');
-        event.respondWith(
-            (async ()=>{
-                const gameName = url.pathname.replace('/b2-game/','').replace('.html','');
-                const cached = await caches.match(`/games/${gameName}.html`);
-                if (cached) {
-                    console.log('serving from cache',gameName);
-                    return cached;
-                }
-                console.log('fetching from b2',gameName);
-                const html = await fetchGameB2(gameName);
-                const cache = await caches.open(CACHE_NAME);
-                const res=new Response(html,{
+                return new  Response(modHtml,{
                     headers:{'Content-Type':'text/html'}
                 });
-                await cache.put(`/games/${gameName}.html`,res.clone());
-                return res;
             })()
         );
         return;
     }
-    if (url.pathname.startsWith('/games/') && url.pathname.endsWith('.html')) {
-        event.respondWith(
-            caches.match(event.request).then(cResponse => {
-                if (cResponse) {
-                    console.log('serving from cache:',url.pathname);
-                    return cResponse;
-                }
-                return fetch(event.request);
-            })
-        );
-    } else {
-        event.respondWith(
-            caches.match(event.request).then(cResponse =>{
-                return cResponse || fetch(event.request);
-            })
-        );
-    }
+    event.respondWith(fetch(event.request));
 });
