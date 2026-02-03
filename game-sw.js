@@ -26,7 +26,7 @@ self.addEventListener('fetch',(event)=>{
                     '</head>',
                     `<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap" rel="stylesheet">
                     <style>
-    .back-btn {
+.back-btn {
     position: fixed;
     top: 24px;
     left: 24px;
@@ -102,7 +102,7 @@ self.addEventListener('fetch',(event)=>{
                     document.body.appendChild(backBtn);
                     lucide.createIcons();
                     backBtn.addEventListener('click',()=>{
-                        window.history.back();
+                        window.location.href="/games.html";
                     });
                     </script>
                     </body>`
