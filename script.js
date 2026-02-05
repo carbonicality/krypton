@@ -21,24 +21,30 @@ async function registerSW() {
     if (!navigator.serviceWorker) {
         throw new Error("browser doesnt support sw");
     }
-    await navigator.serviceWorker.register('/uv/sw.js');
+    const proxyType =getProxyType();
+    if (proxyType === 'uv') {
+        await navigator.serviceWorker.register('/uv/sw.js');
+    }
 }
 
 async function initProxy() {
-    if (!swReg) {
-        try {
-            await registerSW();
-            swReg=true;
-            console.log('sw registered');
-        } catch (err) {
-            console.error('sw reg failed',err);
-            throw err;
+    const pType = getProxyType();
+    if (pType==='uv') {
+        if (!swReg) {
+            try {
+                await registerSW();
+                swReg=true;
+                console.log('sw registered');
+            } catch (err) {
+                console.error('sw reg failed',err);
+                throw err;
+            }
         }
-    }
-    let wispUrl = "wss://wisp.mercurywork.shop/";
-    if ((await connection.getTransport()) !== "/epoxy/index.mjs") {
-        await connection.setTransport("/epoxy/index.mjs",[{wisp:wispUrl}]);
-        console.log('epoxy transport set');
+        let wispUrl = localStorage.getItem('krypton_wispUrl') || "wss://wisp.mercurywork.shop";
+        if ((await connection.getTransport()!=="/epoxy/index.mjs")) {
+            await connection.setTransport("/epoxy/index.mjs",[{wisp:wispUrl}]);
+            console.log('epoxy set!');
+        }
     }
 }
 
@@ -394,12 +400,21 @@ function startURLM(iframe,tabId) {
     const activeTab = document.querySelector(`.tab[data-tab-id="${tabId}"]`);
     let lastUrl = tabs[tabId]?.url;
     let urlChangeCount = 0;
-    urlUpdInterval = setInterval(() => {
+    urlUpdInterval=setInterval(()=>{
         try {
             let iframeSrc = iframe.contentWindow.location.href;
-            if (iframeSrc.includes(__uv$config.prefix)) {
+            const proxyType=getProxyType();
+            let decodedUrl=null;
+            if (proxyType==='scramjet'&&iframeSrc.includes('scramjet.carbon06.qzz.io/scramjet/')) {
+                let parts = iframeSrc.split('scramjet.carbon06.qzz.io/scramjet/')
+                if (parts[1]) {
+                    decodedUrl=decodeURIComponent(parts[1]);
+                }
+            } else if (proxyType==='uv'&&iframeSrc.includes(__uv$config.prefix)) {
                 let encodedUrl = iframeSrc.split(__uv$config.prefix)[1];
-                let decodedUrl = __uv$config.decodeUrl(encodedUrl);
+                decodedUrl=__uv$config.decodeUrl(encodedUrl);
+            }
+            if (decodedUrl) {
                 if (tabs[tabId] && tabs[tabId].url !== decodedUrl) {
                     updBmBtn();
                     tabs[tabId].isFirst = false;
@@ -581,12 +596,21 @@ function updTabFavicon(iframe,tabId) {
         }
         if (!faviconUrl) {
             try {
-                const url=new URL(iframe.contentWindow.location.href);
-                if (url.pathname.includes(__uv$config.prefix)) {
+                const url = new URL(iframe.contentWindow.location.href);
+                const proxyType=getProxyType();
+                let decodedUrl = null;
+                if (proxyType==='scramjet' && url.href.includes('scramjet.carbon06.qzz.io/scramjet/')) {
+                    const parts = url.href.split('scramjet.carbon06.qzz.io/scramjet/');
+                    if (parts[1]) {
+                        decodedUrl = decodeURIComponent(parts[1]);
+                    }
+                } else if (proxyType==='uv'&&url.pathname.includes(__uv$config.prefix)) {
                     let encodedUrl = url.pathname.split(__uv$config.prefix)[1];
-                    let decodedUrl= __uv$config.decodeUrl(encodedUrl);
+                    decodedUrl=__uv$config.decodeUrl(encodedUrl);
+                }
+                if (decodedUrl) {
                     let realUrl=new URL(decodedUrl);
-                    faviconUrl = `${realUrl.origin}/favicon.ico`;
+                    faviconUrl=`${realUrl.origin}/favicon.ico`;
                 }
             } catch (e) {
                 console.log('couldnt get favicon',e);
@@ -630,6 +654,10 @@ function search(input) {
     return template.replace("%s", encodeURIComponent(input));
 }
 
+function getProxyType() {
+    return localStorage.getItem('krypton_proxyType') || 'scramjet';
+}
+
 async function loadWebsite(url) {
     if (!url || url.toLowerCase() === 'krypton://new-tab' || url.toLowerCase()==='krypton new tab') {
         showWscreen();
@@ -658,14 +686,21 @@ async function loadWebsite(url) {
         alert('failed to init proxy');
         return;
     }
+    const activeTab=document.querySelector('.tab.active');
+    const tabId = activeTab.dataset.tabId;
     const cArea = document.querySelector('.c-area');
     const wScreen = document.querySelector('.wscreen');
     let fixedurl = search(url);
-    let src = __uv$config.prefix + __uv$config.encodeUrl(fixedurl);
-    console.log('full url:',fixedurl);
-    console.log('proxy url:',src);
-    const activeTab = document.querySelector('.tab.active');
-    const tabId = activeTab.dataset.tabId;
+    let src;
+    const proxyType=getProxyType();
+    if (proxyType === 'scramjet') {
+        src = 'https://scramjet.carbon06.qzz.io/scramjet/'+encodeURIComponent(fixedurl);
+    } else {
+        src=__uv$config.prefix+__uv$config.encodeUrl(fixedurl);
+    }
+    console.log('fullurl:',fixedurl);
+    console.log('proxy url',src);
+    console.log('proxy type',proxyType);
     wScreen.style.display = 'none';
     if (tabs[tabId] && tabs[tabId].iframe) {
         tabs[tabId].iframe.src = src;
