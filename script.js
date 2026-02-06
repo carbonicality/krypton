@@ -1,19 +1,8 @@
 import * as BareMux from "/baremux/index.mjs";
 const connection=new BareMux.BareMuxConnection("/baremux/worker.js");
-const { ScramjetController } = $scramjetLoadController();
-const scramjet = new ScramjetController({
-    files:{
-        wasm: "/scram/scramjet.wasm.wasm",
-        all: "/scram/scramjet.all.js",
-        sync: "/scram/scramjet.sync.js",
-    },
-});
-try {
-    scramjet.init();
-} catch (err) {
-    console.warn('sj init error',err);
-}
+
 let swReg = false;
+let sjInit = false;
 
 lucide.createIcons();
 
@@ -38,10 +27,6 @@ async function registerSW() {
     const proxyType =getProxyType();
     if (proxyType === 'uv') {
         await navigator.serviceWorker.register('/uv/sw.js');
-    } else if (proxyType === 'scramjet') { 
-        await navigator.serviceWorker.register('/sw.js',{
-            scope:'/scram/'
-        });
     }
 }
 
@@ -64,14 +49,36 @@ async function initProxy() {
             console.log('epoxy set!');
         }
     } else if (pType==='scramjet') {
-        let wispUrl = "wss://scramjet.carbon06.qzz.io/wisp/";
-        if ((await connection.getTransport())!=="/libcurl/index.mjs") {
-            await connection.setTransport("/libcurl/index.mjs",[{
-                wisp: wispUrl
-            }]);
-            console.log('libcurl transport set! (sj)');
+        if (!sjInit) {
+            await ensureScramInit();
         }
+        console.log('sj init!');
     }
+}
+
+function ensureScramInit() {
+    return new Promise((resolve)=>{
+        let initFrame=document.getElementById('scramjet-init');
+        if (!initFrame){
+            initFrame=document.createElement('iframe');
+            initFrame.id='scramjet-init';
+            initFrame.src='https://scramjet.carbon06.qzz.io/';
+            initFrame.style.display='none';
+            document.body.appendChild(initFrame);
+        }
+        if (sjInit) {
+            resolve();
+            return;
+        }
+        const checkInit=()=>{
+            setTimeout(()=>{
+                sjInit=true;
+                console.log('sj init, hidden iframe');
+                resolve();
+            },2000);
+        };
+        initFrame.addEventListener('load',checkInit,{once:true});
+    });
 }
 
 function ATHistory(url,title) {
@@ -720,20 +727,9 @@ async function loadWebsite(url) {
     let src;
     const proxyType=getProxyType();
     if (proxyType === 'scramjet') {
-        try {
-            if (!swReg) {
-                await registerSW();
-                swReg=true;
-                console.log('sw registered');
-            }
-            await initProxy();
-        } catch (err) {
-            console.error('setup failed',error);
-            return;
-        }
-        src='/scram/'+encodeURIComponent(fixedurl);
-        console.log('purl',src);
-        console.log('ptype',proxyType);
+        await initProxy();
+        src=`https://scramjet.carbon06.qzz.io/embed.html`;
+        console.log('sj init, loading embed!');
     } else {
         await initProxy();
         src=__uv$config.prefix+__uv$config.encodeUrl(fixedurl);
@@ -745,6 +741,9 @@ async function loadWebsite(url) {
     if (tabs[tabId] && tabs[tabId].iframe) {
         tabs[tabId].iframe.src = src;
         tabs[tabId].url = fixedurl;
+        if (proxyType==='scramjet') {
+            tabs[tabId].iframe.dataset.pendingUrl = fixedurl;
+        }
         monitorLoad(tabs[tabId].iframe,tabId);
     } else {
         const iframe = document.createElement('iframe');
@@ -753,6 +752,9 @@ async function loadWebsite(url) {
         iframe.dataset.tabId = tabId;
         cArea.appendChild(iframe);
         setupIntercept(iframe,tabId);
+        if (proxyType==='scramjet') {
+            iframe.dataset.pendingUrl=fixedurl;
+        }
         tabs[tabId] = {
             url: fixedurl,
             title: url,
@@ -1111,6 +1113,85 @@ function loadWebsiteInternal(url,title) {
 window.addEventListener('message', (event) => {
     if (event.data.type === 'clearHistory') {
         localStorage.setItem('krypton_history', JSON.stringify([]));
+        return;
+    }
+    if (event.origin==='https://scramjet.carbon06.qzz.io' && event.data.type==='scramjet-ready') {
+        console.log('received scramjet-ready');
+        document.querySelectorAll('.bframe').forEach(iframe => {
+            if (iframe.src.includes('embed.html') && iframe.dataset.pendingUrl){
+                const url = iframe.dataset.pendingUrl;
+                iframe.contentWindow.postMessage({
+                    type:'navigate',
+                    url: url,
+                },'https://scramjet.carbon06.qzz.io');
+                console.log('sent nav AFTER READY',url);
+                delete iframe.dataset.pendingUrl;
+            }
+        });
+    }
+    if (event.origin==='https://scramjet.carbon06.qzz.io' && event.data.type==='scramjet-url-update') {
+        const sjUrl = event.data.url;
+        let decodedUrl = sjUrl;
+        if (sjUrl.includes('/scramjet/')) {
+            const parts=sjUrl.split('/scramjet/');
+            if (parts[1]) {
+                decodedUrl = decodeURIComponent(parts[1]);
+                decodedUrl = decodedUrl.split('&zx=')[0];
+                decodedUrl = decodedUrl.split('&no_sw_cr=')[0];
+            }
+        }
+        const activeTab = document.querySelector('.tab.active');
+        if (activeTab) {
+            const tabId=activeTab.dataset.tabId;
+            if (tabs[tabId] && tabs[tabId].iframe && tabs[tabId].iframe.src.includes('embed.html')) {
+                if (tabs[tabId].url!==decodedUrl) {
+                    tabs[tabId].url = decodedUrl;
+                    tabs[tabId].isFirst = false;
+                    if (document.activeElement !== urlInput) {
+                        document.getElementById('urlInput').value=decodedUrl;
+                        if (document.getElementById('urlInput').style.display==='none') {
+                            urlDisplay.innerHTML = formatUrl(decodedUrl);
+                        }
+                    }
+                    updLIC(decodedUrl);
+                    updBmBtn();
+                    updNavBtns();
+                    try {
+                        let urlObj = new URL(decodedUrl);
+                        const tab = document.querySelector(`.tab[data-tab-id="${tabId}"]`);
+                        if (tab) {
+                            tab.querySelector('.tab-tl').textContent=urlObj.hostname;
+                        }
+                    } catch (e) {
+                        const tab  =document.querySelector(`.tab[data-tab-id="${tabId}"]`);
+                        if (tab) {
+                            tab.querySelector('.tab-tl').textContent=decodedUrl;
+                        }
+                    }
+                    try {
+                        let urlObj= new URL(decodedUrl);
+                        const faviconUrl = `${urlObj.origin}/favicon.ico`;
+                        const tab = document.querySelector(`.tab[data-tab-id="${tabId}"]`);
+                        if (tab) {
+                            const favCont = tab.querySelector('.tab-fav');
+                            const favImg= document.createElement('img');
+                            favImg.src=faviconUrl;
+                            favImg.style.width = '16px';
+                            favImg.style.height='16px';
+                            favImg.style.objectFit='contain';
+                            favImg.onload=()=>{
+                                favCont.innerHTML = '';
+                                favCont.appendChild(favImg);
+                            };
+                            favImg.onerror = ()=>{
+                                favCont.innerHTML='<i data-lucide="globe"></i>';
+                                lucide.createIcons();
+                            };
+                        }
+                    } catch (e) {}
+                }
+            }
+        }
     }
 });
 
