@@ -684,7 +684,7 @@ function updTabFavicon(iframe,tabId) {
 // its proxin' time.
 
 function search(input) {
-    let template = "https://www.bing.com/search?q=%s";
+    let template = "https://www.google.com/search?q=%s";
     try {
         return new URL(input).toString();
     } catch (err) {}
