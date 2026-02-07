@@ -1156,6 +1156,17 @@ window.addEventListener('message', (event) => {
             }
         });
     }
+    if (event.origin==='https://scramjet.carbon06.qzz.io' && event.data.type==='open-new-tab') {
+        const url=event.data.url;
+        let decodedUrl = url;
+        if (url.includes('/scramjet/')) {
+            const parts = url.split('/scramjet/');
+            if (parts[1]) {
+                decodedUrl = decodeURIComponent(parts[1]);
+            }
+        }
+        newTabUrl(decodedUrl);
+    }
     if (event.origin==='https://scramjet.carbon06.qzz.io' && event.data.type==='scramjet-url-update') {
         const sjUrl = event.data.url;
         let decodedUrl = sjUrl;
