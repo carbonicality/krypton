@@ -3,6 +3,7 @@ const connection=new BareMux.BareMuxConnection("/baremux/worker.js");
 
 let swReg = false;
 let sjInit = false;
+let isLoading = false;
 
 lucide.createIcons();
 
@@ -430,6 +431,13 @@ function showWscreen() {
 }
 
 function startURLM(iframe,tabId) {
+    const proxyType=getProxyType();
+    if (proxyType==='scramjet') {
+        if (urlUpdInterval) {
+            clearInterval(urlUpdInterval);
+        }
+        return;
+    }
     const activeTab = document.querySelector(`.tab[data-tab-id="${tabId}"]`);
     let lastUrl = tabs[tabId]?.url;
     let urlChangeCount = 0;
@@ -692,6 +700,10 @@ function getProxyType() {
 }
 
 async function loadWebsite(url) {
+    if (isLoading) {
+        console.log('ignoring duplicate (issuetracker reference??)');
+        return;
+    }
     if (!url || url.toLowerCase() === 'krypton://new-tab' || url.toLowerCase()==='krypton new tab') {
         showWscreen();
         return;
@@ -712,6 +724,18 @@ async function loadWebsite(url) {
         loadWebsiteInternal('./games.html','Games');
         return;
     }
+    isLoading=true;
+    const activeTab=document.querySelector('.tab.active');
+    const tabId = activeTab.dataset.tabId;
+    const cArea = document.querySelector('.c-area');
+    const wScreen = document.querySelector('.wscreen');
+    let fixedurl = search(url);
+    const loadOvr = document.getElementById('loadOvr');
+    const progBar = document.getElementById('progBar');
+    const progBarCont = document.getElementById('progBarCont');
+    loadOvr.classList.add('show');
+    progBarCont.classList.add('show');
+    progBar.style.width = '30%';
     try{
         await initProxy();
     } catch (err) {
@@ -719,11 +743,6 @@ async function loadWebsite(url) {
         alert('failed to init proxy');
         return;
     }
-    const activeTab=document.querySelector('.tab.active');
-    const tabId = activeTab.dataset.tabId;
-    const cArea = document.querySelector('.c-area');
-    const wScreen = document.querySelector('.wscreen');
-    let fixedurl = search(url);
     let src;
     const proxyType=getProxyType();
     if (proxyType === 'scramjet') {
@@ -803,6 +822,13 @@ function monitorLoad(iframe,tabId) {
     const loadOvr = document.getElementById('loadOvr');
     const progBar = document.getElementById('progBar');
     const progBarCont = document.getElementById('progBarCont');
+    if (!loadOvr.classList.contains('show')) {
+        loadOvr.classList.add('show');
+        progBarCont.classList.add('show');
+        progBar.style.width='10%';
+    } else {
+        progBar.style.width='40%';
+    }
     loadOvr.classList.add('show');
     progBarCont.classList.add('show');
     progBar.style.width='10%';
@@ -847,6 +873,7 @@ function monitorLoad(iframe,tabId) {
     function completeLoad() {
         if (loadComplete) return;
         loadComplete = true;
+        isLoading=false;
         clearInterval(progInterval);
         clearInterval(iframeReady);
         clearInterval(actCheck);
