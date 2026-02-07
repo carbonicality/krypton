@@ -1169,6 +1169,7 @@ window.addEventListener('message', (event) => {
     }
     if (event.origin==='https://scramjet.carbon06.qzz.io' && event.data.type==='scramjet-url-update') {
         const sjUrl = event.data.url;
+        const pageTitle = event.data.title;
         let decodedUrl = sjUrl;
         if (sjUrl.includes('/scramjet/')) {
             const parts=sjUrl.split('/scramjet/');
@@ -1194,17 +1195,10 @@ window.addEventListener('message', (event) => {
                     updLIC(decodedUrl);
                     updBmBtn();
                     updNavBtns();
-                    try {
-                        let urlObj = new URL(decodedUrl);
-                        const tab = document.querySelector(`.tab[data-tab-id="${tabId}"]`);
-                        if (tab) {
-                            tab.querySelector('.tab-tl').textContent=urlObj.hostname;
-                        }
-                    } catch (e) {
-                        const tab  =document.querySelector(`.tab[data-tab-id="${tabId}"]`);
-                        if (tab) {
-                            tab.querySelector('.tab-tl').textContent=decodedUrl;
-                        }
+                    const tab = document.querySelector(`.tab[data-tab-id="${tabId}"]`);
+                    if (tab&&pageTitle) {
+                        tab.querySelector('.tab-tl').textContent=pageTitle;
+                        tabs[tabId].title = pageTitle;
                     }
                     try {
                         let urlObj= new URL(decodedUrl);
