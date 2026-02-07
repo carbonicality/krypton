@@ -1227,6 +1227,22 @@ window.addEventListener('message', (event) => {
     }
 });
 
+document.getElementById('cloakItem').addEventListener('click',()=>{
+    drMenu.classList.remove('show');
+    cloakSite();
+});
+
+function cloakSite() {
+    const win = window.open('about:blank','_blank');
+    const iframe = win.document.createElement('iframe');
+    iframe.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;border:none;';
+    iframe.src=window.location.href;
+    win.document.body.appendChild(iframe);
+    win.document.body.style.margin='0';
+    win.document.body.style.overflow='hidden';
+    window.close();
+}
+
 // shortcuts stuff
 document.querySelectorAll('.shortcut').forEach(shortcut => {
     shortcut.addEventListener('click', () => {
