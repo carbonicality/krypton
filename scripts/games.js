@@ -70,6 +70,9 @@ async function openGame(game) {
         const iframe = document.createElement('iframe');
         iframe.style.cssText='width:100%;height:100%;border:none;';
         iframe.srcdoc = htmlContent;
+        iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-pointer-lock allow-downloads');
+        iframe.setAttribute('allow', 'autoplay; fullscreen; gamepad; keyboard-map *');
+        iframe.focus();
         gametainer.appendChild(iframe);
         document.body.appendChild(gametainer);
         const backBtn = document.createElement('div');
