@@ -1,5 +1,12 @@
 import * as BareMux from "/baremux/index.mjs";
-const connection=new BareMux.BareMuxConnection("/baremux/worker.js");
+const connection=null;
+
+function getConnection() {
+    if (!connection) {
+        connection = new BareMux.BareMuxConnection("/baremux/worker.js");
+    }
+    return connection;
+}
 
 let swReg = false;
 let sjInit = false;
@@ -45,6 +52,7 @@ async function initProxy() {
             }
         }
         let wispUrl = localStorage.getItem('krypton_wispUrl') || "wss://wisp.mercurywork.shop";
+        const conn = getConnection();
         if ((await connection.getTransport()!=="/epoxy/index.mjs")) {
             await connection.setTransport("/epoxy/index.mjs",[{wisp:wispUrl}]);
             console.log('epoxy set!');
