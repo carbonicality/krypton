@@ -45,7 +45,7 @@ function createGC(game) { //create GSC perhaps???????????? cr50 ti50 oooh
     const isCached = localStorage.getItem('krypton_games_cached') === 'true';
     card.innerHTML = `
     <div class="gicon">
-        <img src="${game.icon}" alt="${game.name}" class="dynamic-load" loading="dynamic">
+        <img src="${game.icon}" alt="${game.name}">
     </div>
     <div class="game-nm">${game.name}</div>
     ${isCached ? '<div class="cbadge"><i data-lucide="database"></i></div>':''}
@@ -58,39 +58,21 @@ function createGC(game) { //create GSC perhaps???????????? cr50 ti50 oooh
 
 async function openGame(game) {
     try {
+        //handle externals, open in new
         if (game.url.startsWith("http") && !game.url.includes("cdn.jsdelivr.net")) {
             window.open(game.url,"_blank");
             return;
         }
-        const res = await fetch(game.url+'?t='+Date.now());
-        const htmlContent = await res.text();
-        const gametainer= document.createElement('div');
-        gametainer.id= 'gametainer';
-        gametainer.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:9998;background:#000;';
-        const iframe = document.createElement('iframe');
-        iframe.style.cssText='width:100%;height:100%;border:none;';
-        iframe.srcdoc = htmlContent;
-        iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-pointer-lock allow-downloads');
-        iframe.setAttribute('allow', 'autoplay; fullscreen; gamepad; keyboard-map *');
-        iframe.focus();
-        gametainer.appendChild(iframe);
-        document.body.appendChild(gametainer);
-        const backBtn = document.createElement('div');
-        backBtn.className = 'back-btn';
-        backBtn.style.zIndex = '999999999999999999';
-        backBtn.innerHTML = `
-        <div class="back-btn-in">
-            <i data-lucide="x"></i>
-            <span class="back-txt">Back</span>
-        </div>`;
-        document.body.appendChild(backBtn);
-        lucide.createIcons();
-        backBtn.addEventListener('click',()=>{
-            gametainer.remove();
-            backBtn.remove();
-        });
+        const res = await fetch(game.url+"?t="+Date.now());
+        const html= await res.text();
+        document.open();
+        document.write(html);
+        document.close();
     } catch (error) {
-        console.error('err fetching game',error);
+        console.error('err fetching game:(',error);
+        if (error.message.includes('HTTP') ||error.message.includes('fetch')){
+            alert('failed to load game'+error.message);
+        }
     }
 }
 
@@ -127,33 +109,8 @@ function renderGames() {
             card.style.animationDelay=`${index*0.05}s`;
             grid.appendChild(card);
         });
-        initLoad();
     }
     lucide.createIcons();
-}
-
-function initLoad() {
-    const dImgs = document.querySelectorAll('.dynamic-img');
-    if ('IntersectionObserver' in window) {
-        const imgObserver = new IntersectionObserver((entries,observer)=>{
-            entries.forEach(entry=>{
-                if (entry.isIntersecting) {
-                    const img=entry.target;
-                    img.src=img.dataset.src;
-                    img.classList.add('loaded');
-                    imgObserver.unobserve(img);
-                }
-            });
-        }, {
-            rootMargin: '50px'
-        });
-        dImgs.forEach(img => imgObserver.observe(img)); //and now... observe.
-    } else {
-        dImgs.forEach(img =>{
-            img.src=img.dataset.src;
-            img.classList.add('loaded');
-        });
-    }
 }
 
 function searchGames(query) {

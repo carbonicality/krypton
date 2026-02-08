@@ -40,5 +40,12 @@
         </div>
         <script src="./uv/uv.config.js"></script>
         <script src="./scripts/games.js"></script>
+        <script>
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('./game-sw.js')
+                .then(reg => console.log('gamesw registered', reg))
+                .catch(err => console.error('gamesw reg failed :(',err));
+            }
+        </script>
     </body>
 </html>
