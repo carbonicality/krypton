@@ -1,5 +1,5 @@
 import * as BareMux from "/baremux/index.mjs";
-const connection=null;
+let connection=null;
 
 function getConnection() {
     if (!connection) {
