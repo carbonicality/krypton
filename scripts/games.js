@@ -62,12 +62,14 @@ async function openGame(game) {
             window.open(game.url,"_blank");
             return;
         }
+        const res = await fetch(game.url+'?t='+Date.now());
+        const htmlContent = await res.text();
         const gametainer= document.createElement('div');
         gametainer.id= 'gametainer';
         gametainer.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:9998;background:#000;';
         const iframe = document.createElement('iframe');
         iframe.style.cssText='width:100%;height:100%;border:none;';
-        iframe.src = game.url+"?t="+Date.now();
+        iframe.srcdoc = htmlContent;
         gametainer.appendChild(iframe);
         document.body.appendChild(gametainer);
         const backBtn = document.createElement('div');
