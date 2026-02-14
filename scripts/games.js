@@ -27,11 +27,20 @@ async function fetchGames() {
         }
         const res = await fetch(zonesUrl+"?t="+Date.now());
         const gnMathZones = await res.json();
-        games = gnMathZones.map(zone=>({
-            name:zone.name,
-            icon:zone.cover.replace("{COVER_URL}",COVER_URL).replace("{HTML_URL}",HTML_URL),
-            url:zone.url.replace("{HTML_URL}",HTML_URL).replace("{COVER_URL}",COVER_URL)
-        }));
+        games = gnMathZones
+            .filter(zone=>zone.id!==-1&&zone.id!==1)
+            .map(zone => {
+                let url = zone.url.replace("{HTML_URL}",HTML_URL).replace("{COVER_URL}",COVER_URL);
+                if (zone.id===0) {
+                    url = "https://cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/bowmasters/index.html";
+                }
+                return {
+                    name:zone.name,
+                    icon:zone.cover.replace("{COVER_URL}",COVER_URL).replace("{HTML_URL}",HTML_URL),
+                    url:zone.url.replace("{HTML_URL}",HTML_URL).replace("{COVER_URL}",COVER_URL)
+                }
+            });
+            
         fGames=[...games];
         renderGames();
     } catch (error) {
