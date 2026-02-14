@@ -1179,6 +1179,13 @@ window.addEventListener('message', (event) => {
         const sjUrl = event.data.url;
         const pageTitle=event.data.title;
         let decodedUrl=sjUrl;
+        try {
+            const m = sjUrl.match(/\/scram\/(.+)/);
+            if (m) {
+                decodedUrl = decodeURIComponent(m[1]).split('&zx=')[0].split('&no_sw_cr=')[0];
+            }
+        } catch (_) {}
+        if (decodedUrl.includes('api.carbon06.qzz.io/scram/')) return;
         const activeTab = document.querySelector('.tab.active');
         if (activeTab) {
             const tabId=activeTab.dataset.tabId;
