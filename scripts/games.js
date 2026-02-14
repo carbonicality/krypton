@@ -28,7 +28,7 @@ async function fetchGames() {
         const res = await fetch(zonesUrl+"?t="+Date.now());
         const gnMathZones = await res.json();
         games = gnMathZones
-            .filter(zone=>zone.id!==-1&&zone.id!==1)
+            .filter(zone=>zone.id!==-1&&zone.id!==1&&!zone.id==64)
             .map(zone => {
                 let url = zone.url.replace("{HTML_URL}",HTML_URL).replace("{COVER_URL}",COVER_URL);
                 if (zone.id===0) {
