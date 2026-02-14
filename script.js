@@ -1177,16 +1177,8 @@ window.addEventListener('message', (event) => {
     }
     if (event.origin==='https://api.carbon06.qzz.io' && event.data.type==='scramjet-url-update') {
         const sjUrl = event.data.url;
-        const pageTitle = event.data.title;
-        let decodedUrl = sjUrl;
-        if (sjUrl.includes('/scramjet/')) {
-            const parts=sjUrl.split('/scramjet/');
-            if (parts[1]) {
-                decodedUrl = decodeURIComponent(parts[1]);
-                decodedUrl = decodedUrl.split('&zx=')[0];
-                decodedUrl = decodedUrl.split('&no_sw_cr=')[0];
-            }
-        }
+        const pageTitle=event.data.title;
+        let decodedUrl=sjUrl;
         const activeTab = document.querySelector('.tab.active');
         if (activeTab) {
             const tabId=activeTab.dataset.tabId;
