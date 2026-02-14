@@ -57,6 +57,8 @@ function createGC(game) { //create GSC perhaps???????????? cr50 ti50 oooh
 }
 
 async function openGame(game) {
+    console.log('zone frame',document.getElementById('zoneFrame'));
+    console.log('close game',document.getElementById('closeGame'));
     try {
         if (game.url.startsWith("http") && !game.url.includes("cdn.jsdelivr.net")) {
             window.open(game.url,"_blank");
@@ -64,6 +66,8 @@ async function openGame(game) {
         }
         const res = await fetch(game.url+"?t="+Date.now());
         let html=await res.text();
+        console.log('head content',html.substring(0,500));
+        console.log('game url',game.url);
         const frame = document.getElementById('zoneFrame');
         frame.style.display = 'block';
         frame.contentDocument.open();
@@ -80,6 +84,7 @@ async function openGame(game) {
 function closeGame() {
     const frame = document.getElementById('zoneFrame');
     frame.style.display='none';
+    frame.src='about:blank';
     frame.contentDocument.open();
     frame.contentDocument.write('');
     frame.contentDocument.close();
