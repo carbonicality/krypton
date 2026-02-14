@@ -83,11 +83,11 @@ async function openGame(game) {
 
 function closeGame() {
     const frame = document.getElementById('zoneFrame');
-    frame.style.display='none';
-    frame.src='about:blank';
-    frame.contentDocument.open();
-    frame.contentDocument.write('');
-    frame.contentDocument.close();
+    frame.remove();
+    const nFrame = document.createElement('iframe');
+    nFrame.id='zoneFrame';
+    nFrame.style.cssText = 'display:none;position:fixed;top:0;left:0;width:100%;height:100%;border:none;z-index:9999;';
+    document.body.appendChild(nFrame);
     document.getElementById('closeGame').style.display='none';
 }
 
