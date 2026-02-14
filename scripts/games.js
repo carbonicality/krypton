@@ -58,22 +58,32 @@ function createGC(game) { //create GSC perhaps???????????? cr50 ti50 oooh
 
 async function openGame(game) {
     try {
-        //handle externals, open in new
         if (game.url.startsWith("http") && !game.url.includes("cdn.jsdelivr.net")) {
             window.open(game.url,"_blank");
             return;
         }
         const res = await fetch(game.url+"?t="+Date.now());
-        const html= await res.text();
-        document.open();
-        document.write(html);
-        document.close();
-    } catch (error) {
-        console.error('err fetching game:(',error);
-        if (error.message.includes('HTTP') ||error.message.includes('fetch')){
-            alert('failed to load game'+error.message);
-        }
+        let html=await res.text();
+        const frame = document.getElementById('zoneFrame');
+        frame.style.display = 'block';
+        frame.contentDocument.open();
+        frame.contentDocument.write(html);
+        frame.contentDocument.close();
+        const closeBtn =document.getElementById('closeGame');
+        closeBtn.style.display='block';
+        lucide.createIcons();
+    } catch (err) {
+        console.error('error fetching game',err);
     }
+}
+
+function closeGame() {
+    const frame = document.getElementById('zoneFrame');
+    frame.style.display='none';
+    frame.contentDocument.open();
+    frame.contentDocument.write('');
+    frame.contentDocument.close();
+    document.getElementById('closeGame').style.display='none';
 }
 
 function initBack() {
