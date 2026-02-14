@@ -37,7 +37,7 @@ async function fetchGames() {
                 return {
                     name:zone.name,
                     icon:zone.cover.replace("{COVER_URL}",COVER_URL).replace("{HTML_URL}",HTML_URL),
-                    url:zone.url.replace("{HTML_URL}",HTML_URL).replace("{COVER_URL}",COVER_URL)
+                    url: url
                 }
             });
             
