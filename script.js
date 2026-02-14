@@ -71,7 +71,7 @@ function ensureScramInit() {
         if (!initFrame){
             initFrame=document.createElement('iframe');
             initFrame.id='scramjet-init';
-            initFrame.src='https://scramjet.carbon06.qzz.io/';
+            initFrame.src='https://api.carbon06.qzz.io/';
             initFrame.style.display='none';
             document.body.appendChild(initFrame);
         }
@@ -755,7 +755,7 @@ async function loadWebsite(url) {
     const proxyType=getProxyType();
     if (proxyType === 'scramjet') {
         await initProxy();
-        src=`https://scramjet.carbon06.qzz.io/embed.html`;
+        src=`https://api.carbon06.qzz.io/embed.html`;
         console.log('sj init, loading embed!');
     } else {
         await initProxy();
@@ -1150,7 +1150,7 @@ window.addEventListener('message', (event) => {
         localStorage.setItem('krypton_history', JSON.stringify([]));
         return;
     }
-    if (event.origin==='https://scramjet.carbon06.qzz.io' && event.data.type==='scramjet-ready') {
+    if (event.origin==='https://api.carbon06.qzz.io' && event.data.type==='scramjet-ready') {
         console.log('received scramjet-ready');
         document.querySelectorAll('.bframe').forEach(iframe => {
             if (iframe.src.includes('embed.html') && iframe.dataset.pendingUrl){
@@ -1158,13 +1158,13 @@ window.addEventListener('message', (event) => {
                 iframe.contentWindow.postMessage({
                     type:'navigate',
                     url: url,
-                },'https://scramjet.carbon06.qzz.io');
+                },'https://api.carbon06.qzz.io');
                 console.log('sent nav AFTER READY',url);
                 delete iframe.dataset.pendingUrl;
             }
         });
     }
-    if (event.origin==='https://scramjet.carbon06.qzz.io' && event.data.type==='open-new-tab') {
+    if (event.origin==='https://api.carbon06.qzz.io' && event.data.type==='open-new-tab') {
         const url=event.data.url;
         let decodedUrl = url;
         if (url.includes('/scramjet/')) {
@@ -1175,7 +1175,7 @@ window.addEventListener('message', (event) => {
         }
         newTabUrl(decodedUrl);
     }
-    if (event.origin==='https://scramjet.carbon06.qzz.io' && event.data.type==='scramjet-url-update') {
+    if (event.origin==='https://api.carbon06.qzz.io' && event.data.type==='scramjet-url-update') {
         const sjUrl = event.data.url;
         const pageTitle = event.data.title;
         let decodedUrl = sjUrl;
