@@ -26,9 +26,7 @@ async function fetchGames() {
             console.log('using default zones');
         }
         const res = await fetch(zonesUrl+"?t="+Date.now());
-        console.log(res.status);
         const gnMathZones = await res.json();
-        console.log(gnMathZones);
         games = gnMathZones
             .filter(zone => zone.id !== -1 && zone.id !== 1 && zone.id !== 64)
 
