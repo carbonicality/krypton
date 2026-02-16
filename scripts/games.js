@@ -26,9 +26,12 @@ async function fetchGames() {
             console.log('using default zones');
         }
         const res = await fetch(zonesUrl+"?t="+Date.now());
+        console.log(res.status);
         const gnMathZones = await res.json();
+        console.log(gnMathZones);
         games = gnMathZones
-            .filter(zone=>zone.id!==-1&&zone.id!==1&&!zone.id==64)
+            .filter(zone => zone.id !== -1 && zone.id !== 1 && zone.id !== 64)
+
             .map(zone => {
                 let url = zone.url.replace("{HTML_URL}",HTML_URL).replace("{COVER_URL}",COVER_URL);
                 if (zone.id===0) {

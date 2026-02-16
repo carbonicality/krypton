@@ -58,10 +58,8 @@ async function initProxy() {
             console.log('epoxy set!');
         }
     } else if (pType==='scramjet') {
-        if (!sjInit) {
-            await ensureScramInit();
-        }
-        console.log('sj init!');
+        sjInit=true;
+        console.log('sj init');
     }
 }
 
