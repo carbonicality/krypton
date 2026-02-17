@@ -83,6 +83,7 @@ async function openGame(game) {
         frame.contentDocument.open();
         frame.contentDocument.write(html);
         frame.contentDocument.close();
+        frame.contentDocument.body.style.backgroundColor='#0a0a0a';
         const closeBtn =document.getElementById('closeGame');
         closeBtn.style.display='block';
         lucide.createIcons();

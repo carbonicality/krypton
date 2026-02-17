@@ -1,6 +1,5 @@
 import * as BareMux from "/baremux/index.mjs";
 let connection=null;
-
 function getConnection() {
     if (!connection) {
         connection = new BareMux.BareMuxConnection("/baremux/worker.js");
@@ -753,7 +752,7 @@ async function loadWebsite(url) {
     const proxyType=getProxyType();
     if (proxyType === 'scramjet') {
         await initProxy();
-        src=`https://api.carbon06.qzz.io/embed.html`;
+        src = `https://api.carbon06.qzz.io/embed.html`;
         console.log('sj init, loading embed!');
     } else {
         await initProxy();
@@ -1174,6 +1173,7 @@ window.addEventListener('message', (event) => {
         newTabUrl(decodedUrl);
     }
     if (event.origin==='https://api.carbon06.qzz.io' && event.data.type==='scramjet-url-update') {
+        console.log('URL upd event',event.data.url);
         const sjUrl = event.data.url;
         const pageTitle=event.data.title;
         let decodedUrl=sjUrl;
@@ -1183,12 +1183,15 @@ window.addEventListener('message', (event) => {
                 decodedUrl = decodeURIComponent(m[1]).split('&zx=')[0].split('&no_sw_cr=')[0];
             }
         } catch (_) {}
-        if (decodedUrl.includes('api.carbon06.qzz.io/scram/')) return;
+        if (decodedUrl.includes('api.carbon06.qzz.io/embed.html')) return;
         const activeTab = document.querySelector('.tab.active');
         if (activeTab) {
             const tabId=activeTab.dataset.tabId;
+            if (decodedUrl === tabs[tabId]?.url) return;
             if (tabs[tabId] && tabs[tabId].iframe && tabs[tabId].iframe.src.includes('embed.html')) {
-                if (tabs[tabId].url!==decodedUrl) {
+                //if (tabs[tabId].url!==decodedUrl) {
+                tabs[tabId].url = decodedUrl;
+                tabs[tabId].isFirst = false;
                     tabs[tabId].url = decodedUrl;
                     tabs[tabId].isFirst = false;
                     if (document.activeElement !== urlInput) {
@@ -1226,7 +1229,7 @@ window.addEventListener('message', (event) => {
                             };
                         }
                     } catch (e) {}
-                }
+                //}
             }
         }
     }
