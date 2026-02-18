@@ -18,11 +18,12 @@ sels.forEach(sel =>{
     sel.addEventListener('change',(e)=>{
         localStorage.setItem(`krypton_${e.target.id}`, e.target.value);
     });
-    document.getElementById('particlePreset').addEventListener('change',()=>{
+});
+
+document.getElementById('particlePreset').addEventListener('change',()=>{
         alert('This window will refresh to apply changes.');
         window.parent.location.reload();
     });
-});
 
 const inputs = document.querySelectorAll('input[type="text"]');
 inputs.forEach(input => {
