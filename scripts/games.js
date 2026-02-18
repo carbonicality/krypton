@@ -129,7 +129,7 @@ function createGC(game) {
             } catch (err) {
                 console.log('couldnt parse game html',err);
             }
-            const cachedGames = JSON.parse(localStorage.getItem('krypton_cached_games')||'[]');
+            const cachedGames = JSON.parse(localStorage.setItem('krypton_cached_games')||'[]');
             if (!cachedGames.some(g => g.url === game.url)) {
                 cachedGames.push(game);
                 localStorage.getItem('krypton_cached_games',JSON.stringify(cachedGames));
@@ -176,7 +176,7 @@ async function openGame(game) {
             const cache = await caches.open('krypton-games-v1');
             const cacheRes = await cache.match(game.url);
             if (cacheRes) {
-                html = cacheRes.text();
+                html = await cacheRes.text();
             } else {
                 alert('This game is not cached for offline play. Please cache it while online.');
                 return;
