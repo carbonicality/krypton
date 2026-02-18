@@ -185,6 +185,8 @@ async function openGame(game) {
             const res = await fetch(game.url+"?t="+Date.now());
             html = await res.text();
         }
+        html = html.replace(/navigator\.serviceWorker\.register/g, '//navigator.serviceWorker.register');
+        html = html.replace(/C3_RegisterSW/g, '//C3_RegisterSW');
         const frame = document.getElementById('zoneFrame');
         frame.style.display = 'block';
         frame.contentDocument.open();

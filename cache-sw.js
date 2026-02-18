@@ -24,6 +24,7 @@ const ASSETS = [
     '/baremux/index.js',
     '/baremux/index.mjs',
     '/baremux/worker.js',
+    '/game-sw.js',
     'https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap',
     'https://unpkg.com/lucide@latest',
     'https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js'
