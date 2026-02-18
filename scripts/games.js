@@ -129,10 +129,10 @@ function createGC(game) {
             } catch (err) {
                 console.log('couldnt parse game html',err);
             }
-            const cachedGames = JSON.parse(localStorage.setItem('krypton_cached_games')||'[]');
+            const cachedGames = JSON.parse(localStorage.getItem('krypton_cached_games')||'[]');
             if (!cachedGames.some(g => g.url === game.url)) {
                 cachedGames.push(game);
-                localStorage.getItem('krypton_cached_games',JSON.stringify(cachedGames));
+                localStorage.setItem('krypton_cached_games',JSON.stringify(cachedGames));
             }
             cacheBtn.innerHTML = '<i data-lucide="check"></i>';
             cacheBtn.style.color = '#22c55e';
