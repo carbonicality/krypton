@@ -12,52 +12,6 @@ navItems.forEach(item=>{
         lucide.createIcons();
     });
 });
-
-document.getElementById('cacheBtn').addEventListener('click',async()=>{
-    if (!navigator.serviceWorker.controller) {
-        alert('SW not ready yet, please try again in a moment.');
-        return;
-    }
-    try {
-        const cache = await caches.open('krypton-v1');
-        await cache.addAll([
-            '/',
-    '/index.html',
-    '/games.html',
-    '/history.html',
-    '/bookmarks.html',
-    '/settings.html',
-    '/styles/styles.css',
-    '/styles/settings.css',
-    '/styles/history.css',
-    '/styles/games.css',
-    '/styles/bookmarks.css',
-    '/script.js',
-    '/game-sw.js',
-    '/register-sw.mjs',
-    '/scripts/settings.js',
-    '/scripts/history.js',
-    '/scripts/games.js',
-    '/scripts/bookmarks.js',
-    '/libcurl/index.mjs',
-    '/epoxy/index.js',
-    '/epoxy/index.mjs',
-    '/baremux/index.js',
-    '/baremux/index.mjs',
-    '/baremux/worker.js',
-    'https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap',
-    'https://unpkg.com/lucide@latest',
-    'https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js',
-    'https://cdn.jsdelivr.net/gh/gn-math/assets@main/zones.json'
-        ]);
-        localStorage.setItem('krypton_games_cached','true');
-        alert('Site cached successfully. You can now use krypton offline.');
-    } catch (err) {
-        console.error('caching failed',err);
-        alert('Caching failed: '+err.message);
-    }
-});
-
 const sels = document.querySelectorAll('select');
 sels.forEach(sel =>{
     sel.addEventListener('change',(e)=>{

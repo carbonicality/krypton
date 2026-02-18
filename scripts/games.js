@@ -71,79 +71,7 @@ function createGC(game) {
     <div class="gicon">
         <img src="${game.icon}" alt="${game.name}" loading="lazy">
     </div>
-    <div class="game-nm">${game.name}</div>
-    <button class="cache-btn" title="Cache for offline">
-        <i data-lucide="download"></i>
-    </button>`;
-    const cacheBtn = card.querySelector('.cache-btn');
-    const cachedGames = JSON.parse(localStorage.getItem('krypton_cached_games')||'[]');
-    const isCached = cachedGames.some(g => g.url === game.url);
-    if (isCached) {
-        cacheBtn.innerHTML = '<i data-lucide="check"></i>';
-        cacheBtn.style.color = '#22c55e';
-        lucide.createIcons();
-    }
-    cacheBtn.addEventListener('click', async (e) => {
-        e.stopPropagation();
-        try {
-            const cache = await caches.open('krypton-games-v1');
-            await cache.add(game.url);
-            await cache.add(game.icon);
-            try {
-                const response = await fetch(game.url);
-                const html = await response.text();
-                const scriptRegex = /<script[^>]+src=["']([^"']+)["']/g;
-                const linkRegex = /<link[^>]+href=["']([^"']+)["']/g;
-                const imgRegex = /<img[^>]+src=["']([^"']+)["']/g;
-                const resources = [];
-                let match;
-                while ((match = scriptRegex.exec(html))!==null) {
-                    resources.push(match[1]);
-                }
-                while ((match = linkRegex.exec(html))!==null) {
-                    resources.push(match[1]);
-                }
-                while ((match = imgRegex.exec(html))!==null) {
-                    resources.push(match[1]);
-                }
-                const gameUrl = new URL(game.url);
-                const absResources = resources.map(resource => {
-                    if (resource.startsWith('http')) {
-                        return resource;
-                    } else if (resource.startsWith('//')) {
-                        return 'https:'+resource;
-                    } else if (resource.startsWith('/')) {
-                        return gameUrl.origin + resource;
-                    } else {
-                        const gamePath = gameUrl.pathname.substring(0,gameUrl.pathname.lastIndexOf('/')+1);
-                        return gameUrl.origin+gamePath+resource;
-                    }
-                });
-                for (const resource of absResources) {
-                    try {
-                        await cache.add(resource);
-                    } catch (err) {
-                        console.log('couldnt cache resources', resource);
-                    }
-                }
-            } catch (err) {
-                console.log('couldnt parse game html',err);
-            }
-            const cachedGames = JSON.parse(localStorage.getItem('krypton_cached_games')||'[]');
-            if (!cachedGames.some(g => g.url === game.url)) {
-                cachedGames.push(game);
-                localStorage.setItem('krypton_cached_games',JSON.stringify(cachedGames));
-            }
-            cacheBtn.innerHTML = '<i data-lucide="check"></i>';
-            cacheBtn.style.color = '#22c55e';
-            lucide.createIcons();
-        } catch (err) {
-            console.error('failed to cache game: ',err);
-            cacheBtn.innerHTML = '<i data-lucide="x"></i>';
-            cacheBtn.style.color = '#ef4444';
-            lucide.createIcons();
-        }
-    });
+    <div class="game-nm">${game.name}</div>`;
     card.addEventListener('click',()=>{
         openGame(game);
     });
@@ -185,8 +113,6 @@ async function openGame(game) {
             const res = await fetch(game.url+"?t="+Date.now());
             html = await res.text();
         }
-        html = html.replace(/navigator\.serviceWorker\.register/g, '//navigator.serviceWorker.register');
-        html = html.replace(/C3_RegisterSW/g, '//C3_RegisterSW');
         const frame = document.getElementById('zoneFrame');
         frame.style.display = 'block';
         frame.contentDocument.open();
