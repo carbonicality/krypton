@@ -41,11 +41,23 @@ async function fetchGames() {
                     url: url
                 }
             });
-            
+        localStorage.setItem('krypton_games_list',JSON.stringify(games));
         fGames=[...games];
         renderGames();
     } catch (error) {
         console.error('failed to load games',error);
+        const cachedGames = localStorage.getItem('krypton_games_list');
+        if (cachedGames) {
+            console.log('loading games from cache!');
+            games=JSON.parse(cachedGames);
+            if (!navigator.onLine) {
+                const cached = JSON.parse(localStorage.getItem('krypton_cached_games') || '[]');
+                fGames = cached;
+            } else {
+                fGames = [...games];
+            }
+            renderGames();
+        }
     }
 }
 
@@ -64,26 +76,51 @@ function createGC(game) {
         <i data-lucide="download"></i>
     </button>`;
     const cacheBtn = card.querySelector('.cache-btn');
-    cacheBtn.addEventListener('click',async (e) => {
+    const cachedGames = JSON.parse(localStorage.getItem('krypton_cached_games')||'[]');
+    const isCached = cachedGames.some(g => g.url === game.url);
+    if (isCached) {
+        cacheBtn.innerHTML = '<i data-lucide="check"></i>';
+        cacheBtn.style.color = '#22c55e';
+        lucide.createIcons();
+    }
+    cacheBtn.addEventListener('click', async (e) => {
         e.stopPropagation();
         try {
             const cache = await caches.open('krypton-games-v1');
             await cache.add(game.url);
             await cache.add(game.icon);
+            const cachedGames = JSON.parse(localStorage.getItem('krypton_cached_games')||'[]');
+            if (!cachedGames.some(g => g.url === game.url)) {
+                cachedGames.push(game);
+                localStorage.setItem('krypton_cached_games',JSON.stringify(cachedGames));
+            }
             cacheBtn.innerHTML = '<i data-lucide="check"></i>';
             cacheBtn.style.color = '#22c55e';
             lucide.createIcons();
         } catch (err) {
-            console.error('failed to cache game',err);
+            console.error('failed to cache game: ',err);
             cacheBtn.innerHTML = '<i data-lucide="x"></i>';
             cacheBtn.style.color = '#ef4444';
             lucide.createIcons();
-        } 
+        }
     });
     card.addEventListener('click',()=>{
         openGame(game);
     });
     return card;
+}
+
+function isOnline() {
+    return navigator.onLine;
+}
+
+async function getGames() {
+    if (isOnline()) {
+        return games;
+    } else {
+        const cachedGames = JSON.parse(localStorage.getItem('krypton_cached_games'));
+        return cachedGames;
+    }
 }
 
 async function openGame(game) {
@@ -176,6 +213,13 @@ if (searchInput) {
     searchInput.addEventListener('input',(e)=>{
         searchGames(e.target.value.trim());
     });
+    if (!navigator.onLine) {
+        const searchBox = document.querySelector('.search-box');
+        const offlineMsg = document.createElement('div');
+        offlineMsg.style.cssText = 'text-align:center;color:#94a3b8;font-size:14px;margin-top:12px;';
+        offlineMsg.textContent = 'offline - showing cached games only';
+        searchBox.appendChild(offlineMsg);
+    }
     fetchGames();
 }
 initBack();
