@@ -50,12 +50,7 @@ async function fetchGames() {
         if (cachedGames) {
             console.log('loading games from cache!');
             games=JSON.parse(cachedGames);
-            if (!navigator.onLine) {
-                const cached = JSON.parse(localStorage.getItem('krypton_cached_games') || '[]');
-                fGames = cached;
-            } else {
-                fGames = [...games];
-            }
+            fGames = [...games];
             renderGames();
         }
     }
@@ -78,19 +73,6 @@ function createGC(game) {
     return card;
 }
 
-function isOnline() {
-    return navigator.onLine;
-}
-
-async function getGames() {
-    if (isOnline()) {
-        return games;
-    } else {
-        const cachedGames = JSON.parse(localStorage.getItem('krypton_cached_games'));
-        return cachedGames;
-    }
-}
-
 async function openGame(game) {
     console.log('zone frame',document.getElementById('zoneFrame'));
     console.log('close game',document.getElementById('closeGame'));
@@ -99,32 +81,26 @@ async function openGame(game) {
             window.open(game.url,"_blank");
             return;
         }
-        let html;
-        if (!navigator.onLine) {
-            const cache = await caches.open('krypton-games-v1');
-            const cacheRes = await cache.match(game.url);
-            if (cacheRes) {
-                html = await cacheRes.text();
-            } else {
-                alert('This game is not cached for offline play. Please cache it while online.');
-                return;
-            }
-        } else {
-            const res = await fetch(game.url+"?t="+Date.now());
-            html = await res.text();
-        }
+        const res = await fetch(game.url);
+        const html = await res.text();
         const frame = document.getElementById('zoneFrame');
+        if (!frame) {
+            console.error('zoneFrame not found');
+            return;
+        }
         frame.style.display = 'block';
         frame.contentDocument.open();
         frame.contentDocument.write(html);
         frame.contentDocument.close();
-        frame.contentDocument.body.style.backgroundColor='#0a0a0a';
+        frame.contentDocument.body.style.backgroundColor = '#0a0a0a';
         const closeBtn = document.getElementById('closeGame');
-        closeBtn.style.display = 'block';
+        if (closeBtn) {
+            closeBtn.style.display='block';
+        }
         lucide.createIcons();
     } catch (err) {
         console.error('error fetching game',err);
-        alert('Failed to load game. Make sure it is cached for offline play.');
+        alert('Failed to load game! :(')
     }
 }
 
@@ -192,13 +168,6 @@ if (searchInput) {
     searchInput.addEventListener('input',(e)=>{
         searchGames(e.target.value.trim());
     });
-    if (!navigator.onLine) {
-        const searchBox = document.querySelector('.search-box');
-        const offlineMsg = document.createElement('div');
-        offlineMsg.style.cssText = 'text-align:center;color:#94a3b8;font-size:14px;margin-top:12px;';
-        offlineMsg.textContent = 'offline - showing cached games only';
-        searchBox.appendChild(offlineMsg);
-    }
     fetchGames();
 }
 initBack();
