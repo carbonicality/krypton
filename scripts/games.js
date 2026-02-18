@@ -42,17 +42,45 @@ async function fetchGames() {
                 }
             });
         localStorage.setItem('krypton_games_list',JSON.stringify(games));
-        fGames=[...games];
-        renderGames();
+        if (!navigator.onLine) {
+            checkGames().then(cachedUrls => {
+                fGames = games.filter(game => cachedUrls.includes(game.url));
+                renderGames();
+            });
+        } else {
+            fGames = [...games];
+            renderGames();
+        }
     } catch (error) {
         console.error('failed to load games',error);
         const cachedGames = localStorage.getItem('krypton_games_list');
         if (cachedGames) {
             console.log('loading games from cache!');
             games=JSON.parse(cachedGames);
+            if (!navigator.onLine) {
+                checkGames().then(cachedUrls => {
+                    fGames = games.filter(game=>cachedUrls.includes(game.url));
+                    renderGames();
+                });
+            } else {
+                fGames = [...games];
+                renderGames();
+            }
             fGames = [...games];
             renderGames();
         }
+    }
+}
+
+async function checkGames() {
+    try {
+        const cache = await caches.open('krypton-v2');
+        const requests  =await cache.keys();
+        const cachedUrls = requests.map(req => req.url);
+        return cachedUrls;
+    } catch (err) {
+        console.error('error checking cache',err);
+        return [];
     }
 }
 
@@ -168,6 +196,18 @@ if (searchInput) {
     searchInput.addEventListener('input',(e)=>{
         searchGames(e.target.value.trim());
     });
+    if (!navigator.onLine) {
+        const searchBox = document.getElementById('.search-box');
+        const offlineMsg = document.createElement('div');
+        offlineMsg.style.cssText = 'text-align:center;color:#94a3b8;font-size:14px;margin-top:12px;';
+        offlineMsg.innerHTML = '<i data-lucide="wifi-off"></i> <span>You are offline. Showing cached games only.</span>';
+        offlineMsg.style.display ='flex';
+        offlineMsg.style.alignItems = 'center';
+        offlineMsg.style.justifyContent = 'center';
+        offlineMsg.style.gap = '8px';
+        searchBox.appendChild(offlineMsg);
+        lucide.createIcons();
+    }
     fetchGames();
 }
 initBack();
