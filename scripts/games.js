@@ -89,10 +89,50 @@ function createGC(game) {
             const cache = await caches.open('krypton-games-v1');
             await cache.add(game.url);
             await cache.add(game.icon);
+            try {
+                const response = await fetch(game.url);
+                const html = await response.text();
+                const scriptRegex = /<script[^>]+src=["']([^"']+)["']/g;
+                const linkRegex = /<link[^>]+href=["']([^"']+)["']/g;
+                const imgRegex = /<img[^>]+src=["']([^"']+)["']/g;
+                const resources = [];
+                let match;
+                while ((match = scriptRegex.exec(html))!==null) {
+                    resources.push(match[1]);
+                }
+                while ((match = linkRegex.exec(html))!==null) {
+                    resources.push(match[1]);
+                }
+                while ((match = imgRegex.exec(html))!==null) {
+                    resources.push(match[1]);
+                }
+                const gameUrl = new URL(game.url);
+                const absResources = resources.map(resource => {
+                    if (resource.startsWith('http')) {
+                        return resource;
+                    } else if (resource.startsWith('//')) {
+                        return 'https:'+resource;
+                    } else if (resource.startsWith('/')) {
+                        return gameUrl.origin + resource;
+                    } else {
+                        const gamePath = gameUrl.pathname.substring(0,gameUrl.pathname.lastIndexOf('/')+1);
+                        return gameUrl.origin+gamePath+resource;
+                    }
+                });
+                for (const resource of absResources) {
+                    try {
+                        await cache.add(resource);
+                    } catch (err) {
+                        console.log('couldnt cache resources', resource);
+                    }
+                }
+            } catch (err) {
+                console.log('couldnt parse game html',err);
+            }
             const cachedGames = JSON.parse(localStorage.getItem('krypton_cached_games')||'[]');
             if (!cachedGames.some(g => g.url === game.url)) {
                 cachedGames.push(game);
-                localStorage.setItem('krypton_cached_games',JSON.stringify(cachedGames));
+                localStorage.getItem('krypton_cached_games',JSON.stringify(cachedGames));
             }
             cacheBtn.innerHTML = '<i data-lucide="check"></i>';
             cacheBtn.style.color = '#22c55e';
@@ -131,21 +171,32 @@ async function openGame(game) {
             window.open(game.url,"_blank");
             return;
         }
-        const res = await fetch(game.url+"?t="+Date.now());
-        let html=await res.text();
-        console.log('head content',html.substring(0,500));
-        console.log('game url',game.url);
+        let html;
+        if (!navigator.onLine) {
+            const cache = await caches.open('krypton-games-v1');
+            const cacheRes = await cache.match(game.url);
+            if (cacheRes) {
+                html = cacheRes.text();
+            } else {
+                alert('This game is not cached for offline play. Please cache it while online.');
+                return;
+            }
+        } else {
+            const res = await fetch(game.url+"?t="+Date.now());
+            html = await res.text();
+        }
         const frame = document.getElementById('zoneFrame');
         frame.style.display = 'block';
         frame.contentDocument.open();
         frame.contentDocument.write(html);
         frame.contentDocument.close();
         frame.contentDocument.body.style.backgroundColor='#0a0a0a';
-        const closeBtn =document.getElementById('closeGame');
-        closeBtn.style.display='block';
+        const closeBtn = document.getElementById('closeGame');
+        closeBtn.style.display = 'block';
         lucide.createIcons();
     } catch (err) {
         console.error('error fetching game',err);
+        alert('Failed to load game. Make sure it is cached for offline play.');
     }
 }
 

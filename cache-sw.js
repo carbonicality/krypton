@@ -33,35 +33,49 @@ self.addEventListener('install',(e)=>{
     e.waitUntil(
         caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
     );
+    self.skipWaiting();
 });
 
 self.addEventListener('activate',(e)=>{
+    console.log('sw activating');
     e.waitUntil(
         caches.keys().then(keys=>{
-            Promise.all(keys.filter(k=>k!==CACHE_NAME).map(k=>caches.delete(k)))
+           return Promise.all(
+            keys.filter(k => k !== CACHE_NAME && k !== 'krypton-games-v1')
+            .map(k => caches.delete(k))
+           );
         })
     );
+    return self.clients.claim();
 });
 
 self.addEventListener('fetch',(e) => {
-    if (e.request.url.includes('cdn.jsdelivr.net')) {
-        e.respondWith(
-            caches.match(e.request).then(cached =>{
-                if (cached) return cached;
-                return fetch(e.request).then(response => {
-                    if (response.ok) {
-                        const resClone = response.clone();
-                        caches.open('krypton-games-v1').then(cache => {
-                            cache.put(e.request,resClone);
-                        });
-                    }
-                    return response;
-                }).catch(()=>cached);
-            })
-        );
-    } else {
-        e.respondWith(
-            caches.match(e.request).then(cached => cached||fetch(e.request))
-        );
+    if (e.request.url.startsWith('chrome-extension://')) {
+        return;
     }
+    e.respondWith(
+        caches.match(e.request)
+        .then(cached => {
+            if (cached) {
+                return cached;
+            }
+            return fetch(e.request)
+            .then(response => {
+                if (!response || response.status !== 200 || response.type === 'error') {
+                    return response;
+                }
+                if (e.request.url.includes('cdn.jsdelivr.net')||e.request.url.includes('unpkg.com')) {
+                    const resClone = response.clone();
+                    caches.open('krypton-games-v1').then(cache => {
+                        cache.put(e.request,resClone);
+                    });
+                }
+                return response;
+            })
+            .catch(err => {
+                console.log('fetch failed, returning',e.request.url);
+                return caches.match(e.request);
+            });
+        })
+    );
 });
