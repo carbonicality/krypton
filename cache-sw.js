@@ -50,13 +50,14 @@ self.addEventListener('activate',(e)=>{
 });
 
 self.addEventListener('fetch',(e) => {
-    if (e.request.url.startsWith('chrome-extension://')) {
+    if (e.request.url.startsWith('chrome-extension://')||e.request.url.startsWith('google-analytics.com')) {
         return;
     }
     e.respondWith(
         caches.match(e.request)
         .then(cached => {
             if (cached) {
+                console.log('serving from cache',e.request.url);
                 return cached;
             }
             return fetch(e.request)
@@ -64,10 +65,11 @@ self.addEventListener('fetch',(e) => {
                 if (!response || response.status !== 200 || response.type === 'error') {
                     return response;
                 }
-                if (e.request.url.includes('cdn.jsdelivr.net')||e.request.url.includes('unpkg.com')) {
+                if (e.request.url.includes('cdn.jsdelivr.net')||e.request.url.includes('unpkg.com')||e.request.url.includes('krypton-tau.vercel.app')) {
                     const resClone = response.clone();
                     caches.open('krypton-games-v1').then(cache => {
                         cache.put(e.request,resClone);
+                        console.log('cached',e.request.url);
                     });
                 }
                 return response;
