@@ -61,8 +61,27 @@ function createGC(game) { //create GSC perhaps???????????? cr50 ti50 oooh
         <img src="${game.icon}" alt="${game.name}" loading="lazy">
     </div>
     <div class="game-nm">${game.name}</div>
-    ${isCached ? '<div class="cbadge"><i data-lucide="database"></i></div>':''}
+    <button class="cache-btn">
+        <i data-lucide="download"></i>
+    </button>
     `;
+    card.querySelector('.cache-btn').addEventListener('click',async(e)=>{
+        e.stopPropagation();
+        const btn = card.querySelector('.cache-btn');
+        try {
+            const cache = await caches.open('krypton-games-v1');
+            await cache.add(game.url);
+            await cache.add(game.icon);
+            btn.innerHTML = '<i data-lucide="check"></i>';
+            btn.style.color = '#22c55e';
+            lucide.createIcons();
+        } catch (err) {
+            console.error('failed to cache game',err);
+            btn.innerHTML = '<i data-lucide="x"></i>';
+            btn.style.color = '#eb4034';
+            lucide.createIcons();
+        }
+    });
     card.addEventListener('click',()=>{
         openGame(game);
     });

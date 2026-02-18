@@ -37,6 +37,12 @@ async function registerSW() {
     }
 }
 
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/cache-sw.js')
+    .then(reg => console.log('krypton sw registered',reg))
+    .catch(err => console.error('sw failed',err));
+}
+
 async function initProxy() {
     const pType = getProxyType();
     if (pType==='uv') {
