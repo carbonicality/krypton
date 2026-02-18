@@ -102,7 +102,6 @@ function partCount() {
 function initParticles() {
     if (localStorage.getItem('krypton_particles')==='false') return;
     const count = partCount();
-    if (count===0) return;
     if (typeof particlesJS !== 'undefined') {
         particlesJS('particles-js', {
             particles: {

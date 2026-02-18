@@ -894,14 +894,20 @@ function monitorLoad(iframe,tabId) {
     }
 }
 
+function partCount() {
+    const preset = localStorage.getItem('krypton_particlePreset') || 'maximum';
+    return {off:0,minimal:40,medium:60,maximum:120}[preset]??120;
+}
+
 // background beautifulising particle stuff
 function initParticles() { // bro this stupid function is so annoying bro this was so hard to make there was SO MUCH TRIAL AND ERROR JUST FOR THIS
     if (localStorage.getItem('krypton_particles')==='false') return;
+    const count = partCount();
     if (typeof particlesJS !== 'undefined') {
         particlesJS('particles-js', {
             particles: {
                 number: {
-                    value: 120,
+                    value: count,
                     density: {
                         enable: true,
                         value_area: 800
