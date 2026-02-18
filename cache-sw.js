@@ -26,8 +26,7 @@ const ASSETS = [
     '/baremux/worker.js',
     'https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap',
     'https://unpkg.com/lucide@latest',
-    'https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js',
-    'https://cdn.jsdelivr.net/gh/gn-math/assets@main/zones.json'
+    'https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js'
 ]
 
 self.addEventListener('install',(e)=>{
@@ -44,8 +43,25 @@ self.addEventListener('activate',(e)=>{
     );
 });
 
-self.addEventListener('fetch',(e)=>{
-    e.respondWith(
-        caches.match(e.request).then(cached=>cached||fetch(e.request))
-    );
+self.addEventListener('fetch',(e) => {
+    if (e.request.url.includes('cdn.jsdelivr.net')) {
+        e.respondWith(
+            caches.match(e.request).then(cached =>{
+                if (cached) return cached;
+                return fetch(e.request).then(response => {
+                    if (response.ok) {
+                        const resClone = response.clone();
+                        caches.open('krypton-games-v1').then(cache => {
+                            cache.put(e.request,resClone);
+                        });
+                    }
+                    return response;
+                }).catch(()=>cached);
+            })
+        );
+    } else {
+        e.respondWith(
+            caches.match(e.request).then(cached => cached||fetch(e.request))
+        );
+    }
 });

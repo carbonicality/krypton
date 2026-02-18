@@ -49,38 +49,36 @@ async function fetchGames() {
     }
 }
 
-function createGC(game) { //create GSC perhaps???????????? cr50 ti50 oooh
-    const card=document.createElement('div');
-    card.className ='gcard';
-    if (localStorage.getItem('krypton_anims')==='false') {
-        card.style.transition= 'none';
+function createGC(game) {
+    const card = document.createElement('div');
+    card.className = 'gcard';
+    if (localStorage.getItem('krypton_anims') === 'false') {
+        card.style.transition = 'none';
     }
-    const isCached = localStorage.getItem('krypton_games_cached') === 'true';
     card.innerHTML = `
     <div class="gicon">
         <img src="${game.icon}" alt="${game.name}" loading="lazy">
     </div>
     <div class="game-nm">${game.name}</div>
-    <button class="cache-btn">
+    <button class="cache-btn" title="Cache for offline">
         <i data-lucide="download"></i>
-    </button>
-    `;
-    card.querySelector('.cache-btn').addEventListener('click',async(e)=>{
+    </button>`;
+    const cacheBtn = card.querySelector('.cache-btn');
+    cacheBtn.addEventListener('click',async (e) => {
         e.stopPropagation();
-        const btn = card.querySelector('.cache-btn');
         try {
             const cache = await caches.open('krypton-games-v1');
             await cache.add(game.url);
             await cache.add(game.icon);
-            btn.innerHTML = '<i data-lucide="check"></i>';
-            btn.style.color = '#22c55e';
+            cacheBtn.innerHTML = '<i data-lucide="check"></i>';
+            cacheBtn.style.color = '#22c55e';
             lucide.createIcons();
         } catch (err) {
             console.error('failed to cache game',err);
-            btn.innerHTML = '<i data-lucide="x"></i>';
-            btn.style.color = '#eb4034';
+            cacheBtn.innerHTML = '<i data-lucide="x"></i>';
+            cacheBtn.style.color = '#ef4444';
             lucide.createIcons();
-        }
+        } 
     });
     card.addEventListener('click',()=>{
         openGame(game);
