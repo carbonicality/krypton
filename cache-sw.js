@@ -38,6 +38,12 @@ self.addEventListener('activate',(e)=>{
 });
 
 self.addEventListener('fetch',(e)=>{
+    if (e.request.url.includes('chrome-extension') ||
+        e.request.url.includes('google-analytics') ||
+        e.request.url.includes('googletagmanager') ||
+        e.request.url.includes('region1.google')) {
+            return;
+    }
     e.respondWith(
         caches.match(e.request).then(cached => {
             if (cached) {

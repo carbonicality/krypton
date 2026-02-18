@@ -197,7 +197,7 @@ if (searchInput) {
         searchGames(e.target.value.trim());
     });
     if (!navigator.onLine) {
-        const searchBox = document.getElementById('.search-box');
+        const searchSec = document.getElementById('.search-sec');
         const offlineMsg = document.createElement('div');
         offlineMsg.style.cssText = 'text-align:center;color:#94a3b8;font-size:14px;margin-top:12px;';
         offlineMsg.innerHTML = '<i data-lucide="wifi-off"></i> <span>You are offline. Showing cached games only.</span>';
@@ -205,7 +205,7 @@ if (searchInput) {
         offlineMsg.style.alignItems = 'center';
         offlineMsg.style.justifyContent = 'center';
         offlineMsg.style.gap = '8px';
-        searchBox.appendChild(offlineMsg);
+        searchSec.appendChild(offlineMsg);
         lucide.createIcons();
     }
     fetchGames();
