@@ -84,7 +84,6 @@ function createGC(game) {
         lucide.createIcons();
     }
     cacheBtn.addEventListener('click', async (e) => {
-        alert('You have chosen to cache the game! Once you do this, open the game and play it online for a few seconds to allow a full cache to take place.');
         e.stopPropagation();
         try {
             const cache = await caches.open('krypton-games-v1');
