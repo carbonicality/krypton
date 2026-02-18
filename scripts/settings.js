@@ -18,6 +18,10 @@ sels.forEach(sel =>{
     sel.addEventListener('change',(e)=>{
         localStorage.setItem(`krypton_${e.target.id}`, e.target.value);
     });
+    document.getElementById('particlePreset').addEventListener('change',()=>{
+        alert('This window will refresh to apply changes.');
+        window.parent.location.reload();
+    });
 });
 
 const inputs = document.querySelectorAll('input[type="text"]');
@@ -37,6 +41,25 @@ if (clearBtn) {
         }
     });
 }
+
+function initTgls() {
+    const tgls = {
+        tglParticles: 'krypton_particles',
+        tglAnims: 'krypton_anims'
+    };
+    Object.entries(tgls).forEach(([id,key])=>{
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (localStorage.getItem(key)!=='false') el.classList.add('active');
+        el.addEventListener('click',()=>{
+            el.classList.toggle('active');
+            localStorage.setItem(key,el.classList.contains('active'));
+            alert('This window will refresh to apply changes.')
+            window.parent.location.reload();
+        });
+    });
+}
+initTgls();
 
 function loadSettings() {
     const sSearchEng = localStorage.getItem('krypton_searchEngine');
@@ -59,18 +82,31 @@ function loadSettings() {
         const themeSel = document.getElementById('themeType');
         if (themeSel) themeSel.value = sTheme;
     }
+    const sParticlePreset = localStorage.getItem('krypton_particlePreset');
+    if (sParticlePreset) {
+        const presetSel = document.getElementById('particlePreset');
+        if (presetSel) presetSel.value = sParticlePreset;
+    }
 }
 
 loadSettings();
 
+function partCount() {
+    const preset = localStorage.getItem('krypton_particlePreset') || 'maximum';
+    return {off:0,minimal:40,medium:60,maximum:120}[preset]??120;
+}
+
 //'stolen' from history.html
 // beautifying stuff
 function initParticles() {
+    if (localStorage.getItem('krypton_particles')==='false') return;
+    const count = partCount();
+    if (count===0) return;
     if (typeof particlesJS !== 'undefined') {
         particlesJS('particles-js', {
             particles: {
                 number: {
-                    value: 120,
+                    value: count,
                     density: {
                         enable: true,
                         value_area: 800

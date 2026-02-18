@@ -180,13 +180,21 @@ searchInput.addEventListener('input', (e) => {
 
 renderHistory();
 
+function partCount() {
+    const preset = localStorage.getItem('krypton_particlePreset') || 'maximum';
+    return {off:0,minimal:40,medium:60,maximum:120}[preset]??120;
+}
+
 // beautifying stuff
 function initParticles() {
+    if (localStorage.getItem('krypton_particles')==='false') return;
+    const count = partCount();
+    if (count===0) return;
     if (typeof particlesJS !== 'undefined') {
         particlesJS('particles-js', {
             particles: {
                 number: {
-                    value: 120,
+                    value: count,
                     density: {
                         enable: true,
                         value_area: 800

@@ -896,6 +896,7 @@ function monitorLoad(iframe,tabId) {
 
 // background beautifulising particle stuff
 function initParticles() { // bro this stupid function is so annoying bro this was so hard to make there was SO MUCH TRIAL AND ERROR JUST FOR THIS
+    if (localStorage.getItem('krypton_particles')==='false') return;
     if (typeof particlesJS !== 'undefined') {
         particlesJS('particles-js', {
             particles: {

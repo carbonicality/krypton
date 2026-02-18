@@ -52,10 +52,13 @@ async function fetchGames() {
 function createGC(game) { //create GSC perhaps???????????? cr50 ti50 oooh
     const card=document.createElement('div');
     card.className ='gcard';
+    if (localStorage.getItem('krypton_anims')==='false') {
+        card.style.transition= 'none';
+    }
     const isCached = localStorage.getItem('krypton_games_cached') === 'true';
     card.innerHTML = `
     <div class="gicon">
-        <img src="${game.icon}" alt="${game.name}">
+        <img src="${game.icon}" alt="${game.name}" loading="lazy">
     </div>
     <div class="game-nm">${game.name}</div>
     ${isCached ? '<div class="cbadge"><i data-lucide="database"></i></div>':''}
@@ -160,13 +163,29 @@ if (searchInput) {
 }
 initBack();
 
+let sTimeout;
+searchInput.addEventListener('input',(e)=>{
+    clearTimeout(sTimeout);
+    sTimeout = setTimeout(()=>{
+        searchGames(e.target.value.trim());
+    },150);
+});
+
+function partCount() {
+    const preset = localStorage.getItem('krypton_particlePreset') || 'maximum';
+    return {off:0,minimal:40,medium:60,maximum:120}[preset]??120;
+}
+
 // beautifying stuff
 function initParticles() {
+    if (localStorage.getItem('krypton_particles')==='false') return;
+    const count = partCount();
+    if (count===0) return;
     if (typeof particlesJS !== 'undefined') {
         particlesJS('particles-js', {
             particles: {
                 number: {
-                    value: 120,
+                    value: count,
                     density: {
                         enable: true,
                         value_area: 800
