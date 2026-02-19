@@ -196,21 +196,23 @@ if (searchInput) {
     searchInput.addEventListener('input',(e)=>{
         searchGames(e.target.value.trim());
     });
-    if (!navigator.onLine) {
-        const searchSec = document.getElementById('.search-sec');
-        const offlineMsg = document.createElement('div');
-        offlineMsg.style.cssText = 'text-align:center;color:#94a3b8;font-size:14px;margin-top:12px;';
-        offlineMsg.innerHTML = '<i data-lucide="wifi-off"></i> <span>You are offline. Showing cached games only.</span>';
-        offlineMsg.style.display ='flex';
-        offlineMsg.style.alignItems = 'center';
-        offlineMsg.style.justifyContent = 'center';
-        offlineMsg.style.gap = '8px';
-        searchSec.appendChild(offlineMsg);
-        lucide.createIcons();
-    }
     fetchGames();
 }
 initBack();
+
+window.addEventListener('DOMContentLoaded',()=>{
+    if (!navigator.onLine) {
+        const gametainer = document.querySelector('.gametainer');
+        if (gametainer) {
+            const offlineMsg = document.createElement('div');
+            offlineMsg.className='offline-indicator';
+            offlineMsg.style.cssText = 'text-align:center;color:#94a3b8;font-size:14px;margin-top:12px;';
+            offlineMsg.innerHTML = '<i data-lucide="wifi-off"></i> <span>You are offline. Showing cached games only.</span>';
+            gametainer.insertBefore(offlineMsg,gametainer.firstChild);
+            lucide.createIcons();
+        }
+    }
+});
 
 let sTimeout;
 searchInput.addEventListener('input',(e)=>{
@@ -324,3 +326,19 @@ if (document.readyState === 'loading') {
 } else {
     initParticles();
 }
+
+window.addEventListener('offline',()=>{
+    const gametainer = document.querySelector('.gametainer');
+    if (gametainer && !document.querySelector('.offline-indicator')) {
+        const offlineMsg = document.createElement('div');
+        offlineMsg.className = 'offline-indicator';
+        offlineMsg.style.cssText = 'text-align:center;color:#94a3b8;font-size:14px;margin-bottom:24px;display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(239,68,68,0.1);padding:12px;border-radius:8px;border:1px solid rgba(239,68,68,0.3);';
+        offlineMsg.innerHTML = '<i data-lucide="wifi-off"></i> <span>You are offline - showing cached games only</span>';
+        gametainer.insertBefore(offlineMsg, gametainer.firstChild);
+        lucide.createIcons();
+        checkGames().then(cachedUrls => {
+            fGames = games.filter(game => cachedUrls.includes(game.url));
+            renderGames();
+        });
+    }
+});
