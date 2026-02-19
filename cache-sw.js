@@ -32,17 +32,16 @@ self.addEventListener('activate',(e)=>{
             return Promise.all(
                 keys.filter(k => k !== CACHE_NAME).map(k=>caches.delete(k))
             );
-        })
+        }).then(()=>self.clients.claim());
     );
-    return self.clients.claim();
 });
 
 self.addEventListener('fetch',(e)=>{
-    if (e.request.url.includes('chrome-extension') ||
+    if (e.request.method !== 'GET' || e.request.url.includes('chrome-extension') ||
         e.request.url.includes('google-analytics') ||
         e.request.url.includes('googletagmanager') ||
         e.request.url.includes('region1.google')) {
-            return;
+        return;
     }
     e.respondWith(
         caches.match(e.request).then(cached => {
