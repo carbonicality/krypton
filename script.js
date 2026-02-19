@@ -735,6 +735,10 @@ async function loadWebsite(url) {
         loadWebsiteInternal('./games.html','Games');
         return;
     }
+    if (url.toLowerCase()=='krypton://apps') {
+        loadWebsiteInternal('./apps.html','Apps');
+        return;
+    }
     isLoading=true;
     const activeTab=document.querySelector('.tab.active');
     const tabId = activeTab.dataset.tabId;
@@ -1160,6 +1164,9 @@ window.addEventListener('message', (event) => {
         localStorage.setItem('krypton_history', JSON.stringify([]));
         return;
     }
+    if (event.data.type ==='app-load-url') {
+        loadWebsite(event.data.url);
+    }
     if (event.origin==='https://api.carbon06.qzz.io' && event.data.type==='scramjet-ready') {
         console.log('received scramjet-ready');
         document.querySelectorAll('.bframe').forEach(iframe => {
@@ -1273,8 +1280,7 @@ document.querySelectorAll('.shortcut').forEach(shortcut => {
         } else if (title === 'games') {
             loadWebsiteInternal('./games.html', 'Games');
         } else if (title === 'apps') {
-            //same here
-            alert("not implemented yet (check out bookmarks though) :(");
+            loadWebsiteInternal('./apps.html','Apps');
         } else if (title === 'settings') {
             loadWebsiteInternal('./settings.html','Settings');
         }

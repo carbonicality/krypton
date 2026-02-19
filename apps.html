@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="./styles/games.css">
+        <script src="https://unpkg.com/lucide@latest"></script>
+        <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    </head>
+    <body>
+        <div id="particles-js"></div>
+        <div class="gametainer">
+            <div class="search-sec">
+                <div class="search-box">
+                    <div class="search-in-wpr">
+                        <div class="search-icon">
+                            <i data-lucide="search"></i>
+                        </div>
+                        <input type="text" class="search-input" placeholder="search games..." id="gameSearch">
+                    </div>
+                </div>
+            </div>
+            <div class="game-cont">
+                <div class="gamegrid" id="appGrid"></div>
+                <div class="empty-state" id="emptyState" style="display:none;">
+                    <i data-lucide="search-x"></i>
+                    <p>no apps found</p>
+                </div>
+            </div>
+        </div>
+        <script src="./scripts/apps.js"></script>
+    </body>
+</html>
