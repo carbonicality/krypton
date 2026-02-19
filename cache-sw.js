@@ -6,6 +6,7 @@ const CORE_ASSETS = [
     '/history.html',
     '/bookmarks.html',
     '/settings.html',
+    '/script.js',
     '/styles/styles.css',
     '/styles/settings.css',
     '/styles/history.css',
