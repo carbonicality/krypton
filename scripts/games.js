@@ -206,8 +206,8 @@ window.addEventListener('DOMContentLoaded',()=>{
         if (gametainer) {
             const offlineMsg = document.createElement('div');
             offlineMsg.className='offline-indicator';
-            offlineMsg.style.cssText = 'text-align:center;color:#94a3b8;font-size:14px;margin-top:12px;';
-            offlineMsg.innerHTML = '<i data-lucide="wifi-off"></i> <span>You are offline. Showing cached games only.</span>';
+            offlineMsg.style.cssText = 'text-align:center;color:#94a3b8;font-size:14px;margin-top:16px;margin-bottom:16px;display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(239,68,68,0.08);padding:10px 16px;border-radius:10px;border:1px solid rgba(239,68,68,0.2);';
+            offlineMsg.innerHTML = '<i data-lucide="wifi-off" style="width=16px;height=16px;"></i> <span>you are offline - showing cached games only</span>';
             gametainer.insertBefore(offlineMsg,gametainer.firstChild);
             lucide.createIcons();
         }
@@ -332,8 +332,8 @@ window.addEventListener('offline',()=>{
     if (gametainer && !document.querySelector('.offline-indicator')) {
         const offlineMsg = document.createElement('div');
         offlineMsg.className = 'offline-indicator';
-        offlineMsg.style.cssText = 'text-align:center;color:#94a3b8;font-size:14px;margin-bottom:24px;display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(239,68,68,0.1);padding:12px;border-radius:8px;border:1px solid rgba(239,68,68,0.3);';
-        offlineMsg.innerHTML = '<i data-lucide="wifi-off"></i> <span>You are offline - showing cached games only</span>';
+        offlineMsg.style.cssText = 'text-align:center;color:#94a3b8;font-size:14px;margin-top:16px;margin-bottom:16px;display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(239,68,68,0.08);padding:10px 16px;border-radius:10px;border:1px solid rgba(239,68,68,0.2);';
+        offlineMsg.innerHTML = '<i data-lucide="wifi-off" style="height=16px;width=16px;"></i> <span>you are offline - showing cached games only</span>';
         gametainer.insertBefore(offlineMsg, gametainer.firstChild);
         lucide.createIcons();
         checkGames().then(cachedUrls => {
