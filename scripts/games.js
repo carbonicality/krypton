@@ -1,6 +1,7 @@
 lucide.createIcons();
 let games=[];
 let fGames=[];
+let aGames=[];
 
 const COVER_URL = "https://cdn.jsdelivr.net/gh/gn-math/covers@main";
 const HTML_URL = "https://cdn.jsdelivr.net/gh/gn-math/html@main";
@@ -48,6 +49,7 @@ async function fetchGames() {
                 renderGames();
             });
         } else {
+            aGames = [...games];
             fGames = [...games];
             renderGames();
         }
@@ -59,7 +61,8 @@ async function fetchGames() {
             games=JSON.parse(cachedGames);
             if (!navigator.onLine) {
                 checkGames().then(cachedUrls => {
-                    fGames = games.filter(game=>cachedUrls.includes(game.url));
+                    aGames = games.filter(game=>cachedUrls.includes(game.url));
+                    fGames = [...aGames];
                     renderGames();
                 });
             } else {
@@ -181,10 +184,10 @@ function renderGames() {
 
 function searchGames(query) {
     if (!query) {
-        fGames=[...games];
+        fGames=[...aGames];
     } else {
         const lQuery = query.toLowerCase();
-        fGames = games.filter(game=>{
+        fGames = aGames.filter(game=>{
             return game.name.toLowerCase().includes(lQuery);
         });
     }
@@ -337,7 +340,8 @@ window.addEventListener('offline',()=>{
         gametainer.insertBefore(offlineMsg, gametainer.firstChild);
         lucide.createIcons();
         checkGames().then(cachedUrls => {
-            fGames = games.filter(game => cachedUrls.includes(game.url));
+            aGames = games.filter(game => cachedUrls.includes(game.url));
+            fGames = [...aGames];
             renderGames();
         });
     }
