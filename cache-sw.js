@@ -32,7 +32,7 @@ self.addEventListener('activate',(e)=>{
             return Promise.all(
                 keys.filter(k => k !== CACHE_NAME).map(k=>caches.delete(k))
             );
-        }).then(()=>self.clients.claim());
+        }).then(()=>self.clients.claim())
     );
 });
 
