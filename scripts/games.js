@@ -131,7 +131,10 @@ async function openGame(game) {
         lucide.createIcons();
     } catch (err) {
         console.error('error fetching game',err);
-        alert('Failed to load game! :(')
+        const frame = document.getElementById('zoneFrame');
+        if (!frame || frame.style.display==='none') {
+            alert("Failed to load game! :(");
+        }
     }
 }
 
