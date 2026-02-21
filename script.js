@@ -1123,9 +1123,11 @@ function loadWebsiteInternal(url,title) {
     } else if (url === './bookmarks.html') {
         kryptonUrl = 'krypton://bookmarks';
     } else if (url === './games.html') {
-        kryptonUrl = 'krypton://games'
+        kryptonUrl = 'krypton://games';
     } else if (url === './settings.html') {
-        kryptonUrl = 'krypton://settings'
+        kryptonUrl = 'krypton://settings';
+    } else if (url === './apps.html') {
+        kryptonUrl = 'krypton://apps';
     }
     if (tabs[tabId] && tabs[tabId].iframe) {
         tabs[tabId].iframe.src = url;
