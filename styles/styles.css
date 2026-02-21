@@ -886,3 +886,143 @@ svg {
     transition: width 0.3s ease;
     box-shadow: 0 0 10px rgba(96,165,250,0.5);
 }
+
+.onboard-ovr {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index:9999999999999999999999999999999; /* very small zindex :skull: */
+    display: flex;
+    align-items:center;
+    justify-content: center;
+    backdrop-filter:blur(8px);
+    opacity:0;
+    transition:opacity 0.4s ease;
+}
+
+.onboard-ovr.show {
+    opacity:1;
+}
+
+.onboard-movr {
+    background: #0f0f0f;
+    border: 1px solid #1a1a1a;
+    border-radius:16px;
+    padding: 40px 36px 28px;
+    max-width: 380px;
+    width: 90%;
+    box-shadow: 0 24px 64px rgba(96,165,250,0.15);
+    text-align:center;
+}
+
+.ob-step {
+    display:none;
+    flex-direction: column;
+    align-items:center;
+    gap: 14px;
+    animation: slideUp 0.4s ease both;
+}
+
+.ob-step.active {
+    display:flex;
+}
+
+.ob-icon {
+    width:64px;
+    height:64px;
+    color:#60a5fa;
+    filter: drop-shadow(0 0 20px rgba(96,165,250,0.5));
+    margin-bottom: 8px;
+}
+
+.ob-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.onboard-movr h2 {
+    font-size: 22px;
+    font-weight:700;
+    background:linear-gradient(135deg,#60a5fa,#93c5fd);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.onboard-movr p {
+    font-size: 14px;
+    color: #94a3b8;
+    line-height: 1.6;
+    margin:0;
+}
+
+.onboard-movr strong {
+    color:#60a5fa;
+    -webkit-text-fill-color: #60a5fa;
+}
+
+.ob-progress {
+    margin-top: 32px;
+    display: flex;
+    flex-direction:column;
+    align-items:center;
+    gap:20px;
+}
+
+.ob-dots {
+    display:flex;
+    gap: 8px;
+}
+
+.ob-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #2a2a2a;
+    transition: all 0.3s ease;
+}
+
+.ob-dot.active {
+    background: #60a5fa;
+    box-shadow: 0 0 8px rgba(96,165,250,0.6);
+    width: 24px;
+    border-radius: 4px;
+}
+
+.ob-btns {
+    display:flex;
+    gap:10px;
+}
+
+.ob-btn {
+    padding: 8px 24px;
+    border-radius: 8px;
+    border:none;
+    font-family:'Geist';
+    font-size: 14px;
+    cursor:pointer;
+    transition: all 0.2s ease;
+}
+
+.ob-skip {
+    background: transparent;
+    color:#808080;
+    border: 1px solid #1a1a1a;
+}
+
+.ob-skip:hover {
+    background: #1a1a1a;
+    color: #e0e0e0;
+}
+
+.ob-next {
+    background: #60a5fa;
+    color: #000;
+    font-weight: 600;
+}
+
+.ob-next:hover {
+    background: #93c5fd;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(96,165,250,0.3);
+}

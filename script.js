@@ -1109,6 +1109,44 @@ document.getElementById('aboutItem').addEventListener('click', () => {
     fetchGHCommit();
 });
 
+function initOnboarding() {
+    if (localStorage.getItem('krypton_onboarded')) return;
+    const overlay = document.getElementById('onboardOvr');
+    const steps=overlay.querySelectorAll('.ob-step');
+    const dotsEl=document.getElementById('obDots');
+    const nextBtn =document.getElementById('obNext');
+    const skipBtn = document.getElementById('obSkip');
+    let current = 0;
+    steps.forEach((_,i)=>{
+        const dot = document.createElement('div');
+        dot.className = 'ob-dot'+(i===0?' active':'');
+        dotsEl.appendChild(dot);
+    });
+    function goTo(idx){
+        steps[current].classList.remove('active');
+        dotsEl.children[current].classList.remove('active');
+        current = idx;
+        steps[current].classList.add('active');
+        dotsEl.children[current].classList.add('active');
+        nextBtn.textContent = current === steps.length-1?"let's go!":'next';
+        lucide.createIcons();
+    }
+    function finish() {
+        overlay.classList.remove('show');
+        setTimeout(()=>overlay.style.display='none',400);
+        localStorage.setItem('krypton_onboarded','true');
+    }
+    nextBtn.addEventListener('click',()=>{
+        if (current < steps.length-1) goTo(current+1);
+        else finish();
+    });
+    skipBtn.addEventListener('click',finish);
+    overlay.style.display='flex';
+    requestAnimationFrame(()=>overlay.classList.add('show'));
+    lucide.createIcons();
+}
+initOnboarding();
+
 // for internal pages, i.e history.html
 function loadWebsiteInternal(url,title) {
     const activeTab = document.querySelector('.tab.active');
