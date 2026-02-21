@@ -3,8 +3,48 @@ lucide.createIcons();
 const apps = [
     {
         name:'Roblox',
-        icon:'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Roblox_%282025%29_%28App_Icon%29.svg/960px-Roblox_%282025%29_%28App_Icon%29.svg.png',
+        icon:'https://nowgg.lol/img/roadblock.png',
         url:'https://92.ip.nowgg.fun/apps/a/19900/b.html'
+    },
+    {
+        name:'Stumble Guys',
+        icon:'https://nowgg.lol/img/stumbleguys.jpg',
+        url:'https://92.ip.nowgg.lol/apps/a/10011/b.html'
+    },
+    {
+        name:'Fortnite',
+        icon:'https://nowgg.lol/img/fortnite.png',
+        url:'https://92.ip.nowgg.lol/apps/aptoide/5874/aptoide.html'
+    },
+    {
+        name:'Melon Sandbox',
+        icon:'https://nowgg.lol/img/melon-sandbox.png',
+        url:'https://92.ip.nowgg.lol/apps/playducky/7199/melon-sandbox.html'
+    },
+    {
+        name:'Android',
+        icon:'https://nowgg.lol/img/android.jpg',
+        url:'https://92.ip.nowgg.lol/apps/uncube/7074/now.html'
+    },
+    {
+        name:'Cookie Run Kingdom',
+        icon:'https://nowgg.lol/img/cookierun.jpg',
+        url:'https://92.ip.nowgg.lol/apps/a/10019/b.html'
+    },
+    {
+        name:'Geometry Dash',
+        icon:'https://nowgg.lol/img/geodash.png',
+        url:'https://92.ip.nowgg.lol/apps/robtop-games/1400/geometry-dash.html'
+    },
+    {
+        name:'Rocket League: Sideswipe',
+        icon:'https://nowgg.lol/img/rocketleague.webp',
+        url:'https://92.ip.nowgg.lol/apps/psyonix-studios/4656/rocket-league.html'
+    },
+    {
+        name:'Minecraft Trial',
+        icon:'https://nowgg.lol/img/minecraft.png',
+        url:'https://92.ip.nowgg.lol/apps/aptoide/5874/aptoide.html'
     }
 ];
 
