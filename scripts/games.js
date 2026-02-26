@@ -123,6 +123,21 @@ async function openGame(game) {
         frame.contentDocument.open();
         frame.contentDocument.write(html);
         frame.contentDocument.close();
+
+        //ad block!
+        const removeAds = frame.contentDocument.createElement('script');
+        removeAds.textContent=`
+        function removeAds() {
+            ['sidebarad1','sidebarad2'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.remove();
+            });
+        }
+        removeAds();
+        const observer = new MutationObserver(removeAds);
+        observer.observe(document.body,{childList:true,subtree:true});`;
+        frame.contentDocument.body.appendChild(removeAds);
+
         frame.contentDocument.body.style.backgroundColor = '#0a0a0a';
         const closeBtn = document.getElementById('closeGame');
         if (closeBtn) {
