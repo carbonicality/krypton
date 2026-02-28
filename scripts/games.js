@@ -6,6 +6,7 @@ let aGames=[];
 const COVER_URL = "https://cdn.jsdelivr.net/gh/gn-math/covers@main";
 const HTML_URL = "https://cdn.jsdelivr.net/gh/gn-math/html@main";
 const CKV_URL = "https://cdn.jsdelivr.net/gh/WanoCapy/ChickenKingsVault@main";
+const CKV_ICONS_URL = "https://raw.githubusercontent.com/carbonicality/ChickenKingsVault/main";
 
 let currProvider = localStorage.getItem('krypton_provider') || 'ckv';
 
@@ -132,26 +133,28 @@ function initProvSel() {
 
 async function fetchCKVGames() {
     try {
+        const iconMap = {};
+        try {
+            const iconRes = await fetch(`${CKV_ICONS_URL}/games.json?t=${Date.now()}`);
+            const iconJson = await iconRes.json();
+            iconJson.forEach(g => {
+                const key = g.html.toLowerCase().replace(/\s+/g, '');
+                iconMap[key] = `${CKV_ICONS_URL}/${g.img}`;
+            });
+        } catch (e) {
+            console.log('couldnt load icon map');
+        }
         const apiUrl = `https://api.github.com/repos/WanoCapy/ChickenKingsVault/contents/`;
         const res = await fetch(apiUrl);
         const json = await res.json();
-        const imageExts = ['png','jpg','jpeg','webp'];
-        const imageMap = {};
-        json.filter(f => f.type==='file'&&imageExts.some(ext => f.name.toLowerCase().endsWith('.'+ext)))
-            .forEach(f => {
-                const key=f.name.toLowerCase().replace(/\.(png|jpg|jpeg|webp)$/, '');
-                imageMap[key]=f.name;
-            });
-        let htmlFiles = json.filter(f => f.type === 'file' && f.name.endsWith('.html') && f.name!=='index.html');
+        let htmlFiles = json.filter(f => f.type==='file'&&f.name.endsWith('.html') && f.name !=='index.html');
         const prettyFiles = htmlFiles.filter(f => /[A-Z\s]/.test(f.name));
-        if (prettyFiles.length>0) htmlFiles = prettyFiles;
+        if (prettyFiles.length > 0) htmlFiles = prettyFiles;
         games = htmlFiles.map(f => {
-            const baseName = f.name.replace('.html','');
-            const normKey = baseName.toLowerCase().replace(/[\s.]/g,'');
-            const imageFile = imageMap[normKey]||imageMap[baseName.toLowerCase()]||null;
-            const icon = imageFile ? `${CKV_URL}/${imageFile}` : `${CKV_URL}/${baseName}.png`;
+            const normKey = f.name.toLowerCase().replace(/\s+/g, '');
+            const icon = iconMap[normKey]||`${CKV_URL}/${f.name.replace('.html','.png')}`;
             return {
-                name: baseName,
+                name:f.name.replace('.html',''),
                 icon:icon,
                 url:`${CKV_URL}/${f.name}`
             };
