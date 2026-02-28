@@ -580,3 +580,26 @@ svg {
         width: 95%;
     }
 }
+
+::-webkit-scrollbar {
+    width:8px;
+    height:8px;
+}
+
+::-webkit-scrollbar-track {
+    background:transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #60a5fa;
+    border-radius:4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #3b82f6;
+}
+
+::-webkit-scrollbar-button {
+    background: transparent;
+    color:#60a5fa;
+}
