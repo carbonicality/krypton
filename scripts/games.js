@@ -138,7 +138,7 @@ async function fetchCKVGames() {
             const iconRes = await fetch(`${CKV_ICONS_URL}/games.json?t=${Date.now()}`);
             const iconJson = await iconRes.json();
             iconJson.forEach(g => {
-                const key = g.html.toLowerCase().replace(/\s+/g, '');
+                const key = g.name.toLowerCase().replace(/[^a-z0-9]/g, '');
                 iconMap[key] = `${CKV_ICONS_URL}/${g.img}`;
             });
         } catch (e) {
@@ -151,7 +151,7 @@ async function fetchCKVGames() {
         const prettyFiles = htmlFiles.filter(f => /[A-Z\s]/.test(f.name));
         if (prettyFiles.length > 0) htmlFiles = prettyFiles;
         games = htmlFiles.map(f => {
-            const normKey = f.name.toLowerCase().replace(/\s+/g, '');
+            const normKey = f.name.replace('.html','').toLowerCase().replace(/[^a-z0-9]/g, '');
             const icon = iconMap[normKey]||'';
             return {
                 name:f.name.replace('.html',''),
