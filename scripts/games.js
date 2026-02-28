@@ -152,7 +152,7 @@ async function fetchCKVGames() {
         if (prettyFiles.length > 0) htmlFiles = prettyFiles;
         games = htmlFiles.map(f => {
             const normKey = f.name.toLowerCase().replace(/\s+/g, '');
-            const icon = iconMap[normKey]||`${CKV_URL}/${f.name.replace('.html','.png')}`;
+            const icon = iconMap[normKey]||'';
             return {
                 name:f.name.replace('.html',''),
                 icon:icon,
