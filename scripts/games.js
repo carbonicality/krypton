@@ -5,6 +5,9 @@ let aGames=[];
 
 const COVER_URL = "https://cdn.jsdelivr.net/gh/gn-math/covers@main";
 const HTML_URL = "https://cdn.jsdelivr.net/gh/gn-math/html@main";
+const CKV_URL = "https://cdn.jsdelivr.net/gh/carbonicality/ChickenKingsVault@main";
+
+let currProvider = localStorage.getItem('krypton_provider') || 'ckv';
 
 console.log('sw controlled:',!!navigator.serviceWorker.controller);
 if (navigator.serviceWorker.controller) {
@@ -69,6 +72,83 @@ async function fetchGames() {
                 fGames = [...games];
                 renderGames();
             }
+            fGames = [...games];
+            renderGames();
+        }
+    }
+}
+
+function loadProvider(provider) {
+    currProvider = provider;
+    localStorage.setItem('krypton_provider',provider);
+    games = [];fGames=[];aGames=[];
+    const badge  = document.getElementById('provBadge');
+    if (badge) badge.textContent = provider==='ckv'?'CKV':'gn-math';
+    document.querySelectorAll('.prov-option').forEach(el => {
+        el.classList.toggle('active',el.dataset.provider===provider);
+    });
+    if (provider==='ckv') fetchCKVGames();
+    else fetchGames();
+}
+
+function initProvSel() {
+    const wrapper = document.querySelector('.search-sec');
+    const searchBox = document.querySelector('.search-box');
+    if (!wrapper || !searchBox) return;
+    const providerEl = document.createElement('div');
+    providerEl.className = 'prov-sel';
+    providerEl.innerHTML = `
+    <div class="prov-btn" id="provBtn">
+        <i data-lucide="layers"></i>
+        <span id="provBadge" class="prov-badge">${currProvider === 'ckv' ? 'CKV' : 'gn-math'}</span
+        <i data-lucide="chevron-down" class="prov-chevron"></i>
+    </div>
+    <div class="prov-dropdown" id="provDropdown">
+        <div class="prov-option ${currProvider === 'ckv'?'active':''}" data-provider="ckv">
+            <span class="prov-dot"></span>
+            CKV
+        </div>
+        <div class="prov-option ${currProvider === 'gnmath'?'active':''}" data-provider="gnmath">
+            <span class="prov-dot"></span>
+            gn-math
+        </div>
+    </div>`;
+    wrapper.insertBefore(providerEl,searchBox);
+    const btn = document.getElementById('provBtn');
+    const dropdown= document.getElementById('provDropdown');
+    btn.addEventListener('click',(e)=>{
+        e.stopPropagation();
+        dropdown.classList.toggle('open');
+    });
+    document.addEventListener('click',()=>dropdown.classList.remove('open'));
+    providerEl.querySelectorAll('.prov-option').forEach(el=>{
+        el.addEventListener('click',()=>{
+            dropdown.classList.remove('open');
+            loadProvider(el.dataset.provider);
+        });
+    });
+    lucide.createIcons();
+}
+
+async function fetchCKVGames() {
+    try {
+        const res = await fetch(`${CKV_URL}/games.json?t=${Date.now()}`);
+        const json = await res.json();
+        games = json.map(g => ({
+            name:g.name,
+            icon:`${CKV_URL}/${g.img}`,
+            url:`${CKV_URL}/${g.html}`
+        }));
+        localStorage.setItem('krypton_games_list_ckv',JSON.stringify(games));
+        aGames=[...games];
+        fGames=[...games];
+        renderGames();
+    } catch (error) {
+        console.error('failed to load CKV games:',error);
+        const cachedGames = localStorage.getItem('krypton_games_list_ckv');
+        if (cachedGames) {
+            games = JSON.parse(cachedGames);
+            aGames = [...games];
             fGames = [...games];
             renderGames();
         }
@@ -217,7 +297,8 @@ if (searchInput) {
     searchInput.addEventListener('input',(e)=>{
         searchGames(e.target.value.trim());
     });
-    fetchGames();
+    initProvSel();
+    loadProvider(currProvider);
 }
 initBack();
 

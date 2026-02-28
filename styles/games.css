@@ -327,3 +327,117 @@ svg {
     width: auto;
     margin-left: 8px;
 }
+
+.prov-sel {
+    position:relative;
+    display:flex;
+    justify-content:center;
+    margin-bottom:16px;
+}
+
+.prov-btn {
+    display: inline-flex;
+    align-items: center;
+    gap:8px;
+    background: rgba(15,15,15,0.7);
+    border: 1.5px solid rgba(96,165,250,0.25);
+    border-radius:10px;
+    padding: 8px 14px;
+    cursor:pointer;
+    font-family: 'Geist';
+    font-size:13px;
+    color:#94a3b8;
+    backdrop-filter:blur(20px);
+    transition: all 0.25s ease;
+    user-select:none;
+}
+
+.prov-btn svg {
+    width: 15px;
+    height: 15px;
+    flex-shrink:0;
+}
+
+.prov-btn:hover {
+    border-color:rgba(96,165,250,0.5);
+    color:#cbd5e1;
+    background: rgba(15,15,15,0.9);
+}
+
+.prov-badge {
+    font-weight:700;
+    color:#60a5fa;
+    font-size:13px;
+}
+
+.prov-chevron {
+    transition: transform 0.25s ease;
+}
+
+.prov-dropdown {
+    display:none;
+    position:absolute;
+    top:calc(100%+8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(10,10,10,0.95);
+    border: 1.5px solid rgba(96,165,250,0.25);
+    border-radius: 12px;
+    backdrop-filter:blur(24px);
+    overflow: hidden;
+    min-width:200px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+    z-index:100;
+    animation: dropIn 0.2s cubic-bezier(0.4,0,0.2,1);
+}
+
+@keyframes dropIn {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+.prov-dropdown.open {
+    display:block;
+}
+
+.prov-option {
+    display: flex;
+    align-items:center;
+    gap:10px;
+    padding: 11px 16px;
+    font-family:'Geist';
+    font-size: 13px;
+    color:#94a3b8;
+    cursor:pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.prov-option:hover {
+    background: rgba(96,165,250,0.08);
+    color:#e2e8f0;
+}
+
+.prov-option.active {
+    color:#60a5fa;
+    background: rgba(96,165,250,0.1);
+}
+
+.prov-dot {
+    width: 7px;
+    height: 7px;
+    border-radius:50%;
+    background: rgba(96,165,250,0.3);
+    flex-shrink:0;
+    transition: background 0.15s ease;
+}
+
+.prov-option.active .prov-dot {
+    background: #60a5fa;
+    box-shadow: 0 0 6px rgba(96,165,250,0.6);
+}
