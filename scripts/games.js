@@ -254,6 +254,7 @@ async function openGame(game) {
         if (closeBtn) {
             closeBtn.style.display='block';
         }
+        document.getElementById('fsBtn').style.display='block';
         lucide.createIcons();
     } catch (err) {
         console.error('error fetching game',err);
@@ -272,6 +273,20 @@ function closeGame() {
     nFrame.style.cssText = 'display:none;position:fixed;top:0;left:0;width:100%;height:100%;border:none;z-index:9999;';
     document.body.appendChild(nFrame);
     document.getElementById('closeGame').style.display='none';
+    document.getElementById('fsBtn').style.display='none';
+}
+
+function tglFullscreen() {
+    const iframe = document.getElementById('zoneFrame');
+    const icon = document.querySelector('#fsBtn i');
+    if (!document.fullscreenElement) {
+        iframe.requestFullscreen();
+        icon.setAttribute('data-lucide','minimize');
+    } else {
+        document.exitFullscreen();
+        icon.setAttribute('data-lucide','maximize');
+    }
+    lucide.createIcons();
 }
 
 function initBack() {
