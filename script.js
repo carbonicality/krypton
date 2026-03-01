@@ -1166,6 +1166,8 @@ function loadWebsiteInternal(url,title) {
         kryptonUrl = 'krypton://settings';
     } else if (url === './apps.html') {
         kryptonUrl = 'krypton://apps';
+    } else if (url === './ai.html') {
+        kryptonUrl = 'krypton://ai'
     }
     if (tabs[tabId] && tabs[tabId].iframe) {
         tabs[tabId].iframe.src = url;
@@ -1315,8 +1317,8 @@ function cloakSite() {
 document.querySelectorAll('.shortcut').forEach(shortcut => {
     shortcut.addEventListener('click', () => {
         const title = shortcut.querySelector('.s-title').textContent.toLowerCase();
-        if (title === 'bookmarks') {
-            loadWebsiteInternal('./bookmarks.html', 'Bookmarks');
+        if (title === 'ai') {
+            loadWebsiteInternal('./ai.html', 'AI');
         } else if (title === 'games') {
             loadWebsiteInternal('./games.html', 'Games');
         } else if (title === 'apps') {
