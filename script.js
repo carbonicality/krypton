@@ -1049,6 +1049,11 @@ document.getElementById('bmItem').addEventListener('click', () => {
     loadWebsiteInternal('./bookmarks.html', 'Bookmarks');
 });
 
+document.getElementById('settingsItem').addEventListener('click',()=>{
+    drMenu.classList.remove('show');
+    loadWebsiteInternal('./settings.html','Settings');
+});
+
 // about overlay stuff
 document.getElementById('aboutItem').addEventListener('click', () => {
     drMenu.classList.remove('show');
@@ -1325,6 +1330,8 @@ document.querySelectorAll('.shortcut').forEach(shortcut => {
             loadWebsiteInternal('./apps.html','Apps');
         } else if (title === 'settings') {
             loadWebsiteInternal('./settings.html','Settings');
+        } else if (title === 'movies') {
+            loadWebsite('https://filmex.to');
         }
     });
 });
