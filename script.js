@@ -47,6 +47,11 @@ if ('serviceWorker' in navigator) {
     .catch(err => console.error('sw failed',err));
 }
 
+window.addEventListener('beforeunload',(e)=>{
+    e.preventDefault();
+    e.returnValue='';
+});
+
 async function initProxy() {
     const pType = getProxyType();
     if (pType==='uv') {
