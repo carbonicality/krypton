@@ -135,7 +135,7 @@ async function fetchCKVGames() {
     try {
         const iconMap = {};
         try {
-            const iconRes = await fetch(`https://corsproxy.io?url=${CKV_ICONS_URL}/games.json?t=${Date.now()}`);
+            const iconRes = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(`${CKV_ICONS_URL}/games.json`)}`);
             console.log(iconRes);
             const iconJson = await iconRes.json();
             iconJson.forEach(g => {
