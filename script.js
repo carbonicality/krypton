@@ -13,7 +13,6 @@ let isLoading = false;
 
 lucide.createIcons();
 
-
 let tabCount = 1;
 let tabs = {};
 let urlUpdInterval = null;
@@ -1112,6 +1111,23 @@ document.getElementById('aboutItem').addEventListener('click', () => {
     overlay.classList.add('show');
     lucide.createIcons();
     fetchGHCommit();
+});
+
+document.getElementById('devtoolsItem').addEventListener('click',()=>{
+    drMenu.classList.remove('show');
+    if (!window.eruda) {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/eruda';
+        script.onload=()=>{
+            eruda.init();
+            eruda._entryBtn.hide();
+            eruda.show();
+        }
+        document.head.appendChild(script);
+    } else {
+        const isVis = document.querySelector('#eruda').style.display!=='none';
+        isVis?eruda.hide():eruda.show();
+    }
 });
 
 function initOnboarding() {
