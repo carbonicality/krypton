@@ -13,6 +13,11 @@ let isLoading = false;
 
 lucide.createIcons();
 
+//MAKE SURE YOU CHANGE THESE. ANNOUNCEMENT VARS
+let anncId = 1;
+let anncMsg = 'hey there! we have added an announcement feature. this will keep you updated.';
+let anncTitle = 'announcement';
+
 let tabCount = 1;
 let tabs = {};
 let urlUpdInterval = null;
@@ -1167,6 +1172,22 @@ function initOnboarding() {
     lucide.createIcons();
 }
 initOnboarding();
+
+function showAnnc(title,msg,id) {
+    if (localStorage.getItem(`krypton_annc_${id}`)) return;
+    const ovr = document.getElementById('anncOvr');
+    document.getElementById('anncTitle').textContent=title;
+    document.getElementById('anncMsg').textContent=msg;
+    ovr.style.display = 'flex';
+    requestAnimationFrame(()=>ovr.classList.add('show'));
+    lucide.createIcons();
+    document.getElementById('anncOk').onclick=()=>{
+        ovr.classList.remove('show');
+        setTimeout(()=>ovr.style.display='none',400);
+        localStorage.setItem(`krypton_annc_${id}`,'true');
+    };
+}
+showAnnc(anncTitle,anncMsg,anncId);
 
 // for internal pages, i.e history.html
 function loadWebsiteInternal(url,title) {

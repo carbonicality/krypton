@@ -1049,3 +1049,35 @@ svg {
     background: transparent;
     color:#60a5fa;
 }
+
+.annc-ovr {
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.85);
+    z-index:99999;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    backdrop-filter:blur(8px);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+.annc-ovr.show {
+    opacity: 1;
+}
+
+.ob-icon.sm {
+    width:32px;
+    height:32px;
+    margin-bottom:0;
+    flex-shrink:0;
+}
+
+.annc-hdr {
+    display: flex;
+    align-items: center;
+    justify-content:center;
+    gap:12px;
+    margin-bottom: 12px;
+}
