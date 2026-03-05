@@ -188,7 +188,7 @@ async function fetchHydraGames() {
         games = json.map(g => ({
             name: g.title,
             icon: `${HYDRA_URL}/${g.thumb}`,
-            url: g.frame === 'true' ?`${HYDRA_URL}/${g.file_name}`:`${HYDRA_URL}/${g.file_name}`,
+            url: `${HYDRA_URL}/gmes/${g.file_name}`
         }));
         localStorage.setItem('krypton_games_list_hydra',JSON.stringify(games));
         aGames=[...games];
