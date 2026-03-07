@@ -25,9 +25,10 @@ const scramjet=new ScramjetController({
 scramjet.init();
 
 //MAKE SURE YOU CHANGE THESE. ANNOUNCEMENT VARS
+//DEAR VET PLEASE QUOTE THE STRINGS
 let anncId = 2;
-let anncMsg = I should have fixed movies, there might be 1 or 2 ads so make sure if u can to change the dns settings on ur chromebook to use some AdBlocking one or just download ublock -vet';
-let anncTitle = 'fixed movies';
+let anncMsg = "I should have fixed movies, there might be 1 or 2 ads so make sure if u can to change the dns settings on ur chromebook to use some AdBlocking one or just download ublock -vet";
+let anncTitle = "fixed movies";
 
 let tabCount = 1;
 let tabs = {};
