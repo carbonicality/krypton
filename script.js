@@ -20,7 +20,7 @@ const scramjet=new ScramjetController({
         wasm:"/sail/scram/scramjet.wasm.wasm",
         sync:"/sail/scram/scramjet.sync.js"
     },
-    prefix:"/sail/go"
+    prefix:"/sail/go/"
 });
 scramjet.init();
 
@@ -96,7 +96,8 @@ async function initProxy() {
         }
         const conn = getConnection();
         if ((await conn.getTransport())!=='/sail/libcurl/index.mjs') {
-            await conn.setTransport('/sail/libcurl/index.mjs',[{websocket:localStorage.getItem('krypton_wispUrl')||'wss://wisp.rhw.one/'}]);
+            await conn.setTransport('/sail/libcurl/index.mjs',[{websocket:localStorage.getItem('krypton_wispUrl')||'wss://wisp.mercurywork.shop/'}]);
+            wasm: '/sail/scram/scramjet.wasm.wasm'
         }
     }
 }

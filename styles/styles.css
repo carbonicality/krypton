@@ -378,9 +378,9 @@ body {
 
 .shortcuts {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    grid-template-columns: repeat(4,1fr);
     gap: 16px;
-    max-width: 550px;
+    max-width: 750px;
     margin: 0 auto;
 }
 
@@ -389,6 +389,7 @@ body {
     border: 1px solid rgba(96,165,250,0.15);
     border-radius: 16px;
     padding: 24px 18px;
+    width:120px;
     cursor: pointer;
     transition: all 0.4s cubic-bezier(0.4,0,0.2,1);
     backdrop-filter: blur(20px);
@@ -401,6 +402,7 @@ body {
 .shortcut:nth-child(2) {animation-delay:0.7s;}
 .shortcut:nth-child(3) {animation-delay:0.8s;}
 .shortcut:nth-child(4) {animation-delay:0.9s;}
+.shortcut:nth-child(5) {animation-delay:1s;}
 
 .s-icon {
     width: 40px;
