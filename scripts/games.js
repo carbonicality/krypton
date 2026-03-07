@@ -9,7 +9,7 @@ const CKV_URL = "https://cdn.jsdelivr.net/gh/WanoCapy/ChickenKingsVault@main";
 const CKV_ICONS_URL = "https://raw.githubusercontent.com/carbonicality/ChickenKingsVault/main";
 const HYDRA_URL = "https://cdn.jsdelivr.net/gh/Hydra-Network/hydra-assets@main";
 
-let currProvider = localStorage.getItem('krypton_provider') || 'hydra';
+let currProvider = localStorage.getItem('krypton_provider') || 'ckv';
 
 console.log('sw controlled:',!!navigator.serviceWorker.controller);
 if (navigator.serviceWorker.controller) {
@@ -107,13 +107,13 @@ function initProvSel() {
         <i data-lucide="chevron-down" class="prov-chevron"></i>
     </div>
     <div class="prov-dropdown" id="provDropdown">
-        <div class="prov-option ${currProvider === 'hydra'?'active':''}" data-provider="hydra">
-            <span class="prov-dot"></span>
-            Hydra
-        </div>
         <div class="prov-option ${currProvider === 'ckv'?'active':''}" data-provider="ckv">
             <span class="prov-dot"></span>
             CKV
+        </div>
+        <div class="prov-option ${currProvider === 'hydra'?'active':''}" data-provider="hydra">
+            <span class="prov-dot"></span>
+            Hydra
         </div>
         <div class="prov-option ${currProvider === 'gnmath'?'active':''}" data-provider="gnmath">
             <span class="prov-dot"></span>
