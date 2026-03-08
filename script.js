@@ -1390,3 +1390,14 @@ document.querySelectorAll('.shortcut').forEach(shortcut => {
         }
     });
 });
+
+// adcash stuff
+function initAds() {
+    if (typeof aclib==='undefined') {
+        setTimeout(initAds,100);
+        return;
+    }
+    aclib.runBanner({zoneId:'11049650',containerId:'adLeft'});
+    aclib.runBanner({zoneId:'11049650',containerId:'adRight'});
+}
+initAds();
