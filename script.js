@@ -1390,3 +1390,24 @@ document.querySelectorAll('.shortcut').forEach(shortcut => {
         }
     });
 });
+
+function injectAd(containerId) {
+    const container=document.getElementById(containerId);
+    if (!container) return;
+    const cfgScript = document.createElement('script');
+    cfgScript.text=`
+    atOptions = {
+        'key' : 'e2c77cf7b77b4f13dfab0a85a314e314',
+        'format' : 'iframe',
+        'height' : 600,
+        'width' : 160,
+        'params' : {}
+    };`
+    const invokeScript = document.createElement('script');
+    invokeScript.src="https://www.highperformanceformat.com/e2c77cf7b77b4f13dfab0a85a314e314/invoke.js";
+    container.appendChild(cfgScript);
+    container.appendChild(invokeScript);
+}
+
+injectAd('adLeft');
+injectAd('adRight');
