@@ -1100,9 +1100,10 @@ svg {
     min-width:160px;
     height:600px;
     display:flex;
-    align-items:center;
+    align-items:flex-start;
     justify-content:center;
     flex-shrink:0;
+    align-self:center;
 }
 
 .ad-left {
