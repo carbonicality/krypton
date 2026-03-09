@@ -174,9 +174,17 @@ async function fetchCKVGames() {
         const cachedGames = localStorage.getItem('krypton_games_list_ckv');
         if (cachedGames) {
             games = JSON.parse(cachedGames);
-            aGames = [...games];
-            fGames = [...games];
-            renderGames();
+            if (!navigator.onLine) {
+                checkGames().then(cachedUrls => {
+                    aGames=games.filter(game=>cachedUrls.includes(game.url));
+                    fGames=[...aGames];
+                    renderGames();
+                });
+            } else {
+                aGames=[...games];
+                fGames=[...games];
+                renderGames();
+            }
         }
     }
 }
@@ -199,16 +207,24 @@ async function fetchHydraGames() {
         const cachedGames= localStorage.getItem('krypton_games_list_hydra');
         if (cachedGames) {
             games=JSON.parse(cachedGames);
-            aGames = [...games];
-            fGames = [...games];
-            renderGames();
+            if (!navigator.onLine) {
+                checkGames().then(cachedUrls => {
+                    aGames=games.filter(game=>cachedUrls.includes(game.url));
+                    fGames=[...aGames];
+                    renderGames();
+                });
+            } else {
+                aGames=[...games];
+                fGames=[...games];
+                renderGames();
+            }
         }
     }
 }
 
 async function checkGames() {
     try {
-        const cache = await caches.open('krypton-v2');
+        const cache = await caches.open('krypton-v4');
         const requests  =await cache.keys();
         const cachedUrls = requests.map(req => req.url);
         return cachedUrls;
