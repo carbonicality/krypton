@@ -1101,15 +1101,23 @@ svg {
     height:600px;
     display:flex;
     align-items:flex-start;
-    justify-content:center;
+    justify-content:space-between;
     flex-shrink:0;
     align-self:center;
 }
 
 .ad-left {
-    margin-right: 16px;
+    position:absolute;
+    left:0;
+    top:50%;
+    transform:translateY(-50%);
+    margin-left:0;
 }
 
 .ad-right {
-    margin-left: 16px;
+    position:absolute;
+    right:0;
+    top:50%;
+    transform:translateY(-50%);
+    margin-left:0;
 }
