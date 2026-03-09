@@ -7,13 +7,6 @@ const sendBtn = document.getElementById('aiSend');
 let convoHistory = [];
 let cApiKey = null;
 
-async function getApiKey() {
-    if (cApiKey) return cApiKey;
-    const res = await fetch('https://api.carbon06.qzz.io/api-key.txt');
-    cApiKey = (await res.text()).trim();
-    return cApiKey;
-}
-
 function appendMsg(role,text) {
     const welcome = messagesEl.querySelector('.ai-welcome');
     if (welcome) welcome.remove();
