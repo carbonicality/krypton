@@ -40,6 +40,7 @@ urlDisplay.className = 'url-display';
 urlContainer.insertBefore(urlDisplay,urlInput.nextSibling);
 let isNav = false;
 let isInt = false;
+let searchEng = 'https://www.google.com/search?q=%s';
 
 let bookmarks = JSON.parse(localStorage.getItem('krypton_bookmarks') || '[]');
 let history = JSON.parse(localStorage.getItem('krypton_history') || '[]');
@@ -677,14 +678,13 @@ function updTabFavicon(iframe,tabId) {
 
 // its proxin' time.
 
-function search(input) {
-    let template = "https://www.google.com/search?q=%s";
+function search(input, template=searchEng) {
     try {
         return new URL(input).toString();
     } catch (err) {}
     try {
         let url = new URL(`http://${input}`);
-        if (url.hostname.includes(".")) return url.toString();
+        if (url.hostname.includes('.')) return url.toString();
     } catch (err) {}
     return template.replace("%s", encodeURIComponent(input));
 }
@@ -1250,3 +1250,37 @@ document.querySelectorAll('.shortcut').forEach(shortcut => {
         }
     });
 });
+
+//search eng stuff
+const engBtn = document.getElementById('engineBtn');
+const engDr = document.getElementById('engineDr');
+
+engBtn.addEventListener('click',(e)=>{
+    e.stopPropagation();
+    engineDr.classList.toggle('open');
+    engineBtn.querySelector('.model-chv').style.transform = engineDr.classList.contains('open')?'rotate(180deg)':'';
+});
+
+engDr.querySelectorAll('.engine-opt').forEach(opt => {
+    opt.addEventListener('click',()=>{
+        engDr.querySelectorAll('.engine-opt').forEach(o => o.classList.remove('active'));
+        opt.classList.add('active');
+        searchEng = opt.dataset.engine;
+        document.getElementById('engineBadge').textContent = opt.textContent.trim();
+        engDr.classList.remove('open');
+        engBtn.querySelector('.model-chv').style.transform='';
+    });
+});
+
+function doSearch() {
+    const query=document.querySelector('.search-input').value.trim();
+    if (!query) return;
+    const url = searchEng.replace('%s',encodeURIComponent(query));
+    loadWebsite(url);
+}
+
+document.querySelector('.search-input').addEventListener('keypress',(e)=>{
+    if (e.key==='Enter') doSearch();
+});
+
+document.getElementById('searchSendBtn').addEventListener('click',doSearch);

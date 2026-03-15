@@ -345,9 +345,11 @@ body {
     background: rgba(15,15,15,0.6);
     border: 1px solid rgba(96,165,250,0.2);
     border-radius: 14px;
-    padding: 14px 20px;
+    padding: 8px 8px 8px 14px;
     backdrop-filter: blur(20px);
     transition: all 0.4s cubic-bezier(0.4,0,0.2,1);
+    height:44px;
+    gap:8px;
 }
 
 .search-in-wpr:hover {
@@ -1129,4 +1131,133 @@ svg {
     top:50%;
     transform:translateY(-50%);
     margin-left:0;
+}
+
+.engine-sel {
+    position:relative;
+    flex-shrink:0
+}
+
+.engine-btn {
+    display: inline-flex;
+    align-items: center;
+    gap:6px;
+    background:transparent;
+    border:1.5px solid rgba(96,165,250,0.25);
+    border-radius:8px;
+    padding: 4px 10px;
+    cursor:pointer;
+    font-family:'Geist';
+    font-size:12px;
+    color:#94a3b8;
+    transition: all 0.25s ease;
+    user-select:none;
+    white-space:nowrap;
+}
+
+.engine-btn svg {
+    width:13px;
+    height:13px;
+    flex-shrink:0;
+}
+
+.engine-btn:hover {
+    border-color:rgba(96,165,250,0.5);
+    color:#cbd5e1;
+}
+
+.engine-dr {
+    display:none;
+    position:absolute;
+    bottom: calc(100% + 8px);
+    left: 0;
+    background: rgba(10,10,10,0.95);
+    border: 1.5px solid rgba(96,165,250,0.25);
+    border-radius: 10px;
+    backdrop-filter: blur(24px);
+    min-width: 140px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+    z-index:100;
+    overflow:hidden;
+    animation: dropIn 0.2s cubic-bezier(0.4,0,0.2,1);
+}
+
+.engine-dr.open {
+    display:block;
+}
+
+@keyframes dropIn {
+    from {
+        opacity:0;
+        transform:translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.engine-opt {
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 14px;
+    font-family:'Geist';
+    font-size:13px;
+    color:#94a3b8;
+    cursor:pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.engine-opt:hover {
+    background: rgba(96,165,250,0.08);
+    color:#e2e8f0;
+}
+
+.engine-opt.active {
+    color:#60a5fa;
+    background: rgba(96,165,250,0.1);
+}
+
+.engine-opt.active .prov-dot {
+    background: #60a5fa;
+    box-shadow: 0 0 6px rgba(96,165,250,0.6);
+}
+
+.search-send-btn {
+    width: 30px;
+    height:30px;
+    border-radius:8px;
+    background:#60a5fa;
+    border:none;
+    display:flex;   
+    align-items:center;
+    justify-content: center;
+    flex-shrink:0;
+    transition:all 0.2s cubic-bezier(0.4,0,0.2,1);
+    color:#000;
+}
+
+.search-send-btn svg {
+    width:20px; 
+    height:20px;
+}
+
+.search-send-btn:hover {
+    background: #93c5fd;
+    transform: scale(1.05);
+    box-shadow: 0 4px 16px rgba(96,165,250,0.4);
+}
+
+.search-send-btn.active {
+    transform: scale(0.95);
+}
+
+.prov-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: rgba(96,165,250,0.3);
+    flex-shrink: 0;
+    transition: background 0.15s ease;
 }
