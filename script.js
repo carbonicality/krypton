@@ -104,31 +104,6 @@ async function initProxy() {
     }
 }
 
-function ensureScramInit() {
-    return new Promise((resolve)=>{
-        let initFrame=document.getElementById('scramjet-init');
-        if (!initFrame){
-            initFrame=document.createElement('iframe');
-            initFrame.id='scramjet-init';
-            initFrame.src='https://api.classroom.lat/';
-            initFrame.style.display='none';
-            document.body.appendChild(initFrame);
-        }
-        if (sjInit) {
-            resolve();
-            return;
-        }
-        const checkInit=()=>{
-            setTimeout(()=>{
-                sjInit=true;
-                console.log('sj init, hidden iframe');
-                resolve();
-            },2000);
-        };
-        initFrame.addEventListener('load',checkInit,{once:true});
-    });
-}
-
 function ATHistory(url,title) {
     if (!url || url === 'krypton://new-tab' || url.startsWith('./') || url.startsWith('krypton://')) {
         return;
@@ -149,26 +124,6 @@ function ATHistory(url,title) {
 function clearHist() {
     history = [];
     localStorage.setItem('krypton_history', JSON.stringify(history));
-}
-
-function getHistTR(range) {
-    const now = Date.now();
-    const odMs = 24 * 60 * 60 * 1000;
-    switch(range) {
-        case 'today':
-            const sToday = new Date().setHours(0,0,0,0);
-            return history.filter(entry => entry.timestamp >= sToday);
-        case 'yesterday':
-            const sYest = new Date().setHours(0,0,0,0) - odMs;
-            const sToday2 = new Date().setHours(0,0,0,0);
-            return history.filter(entry => entry.timestamp >= sYest && entry.timestamp < sToday2);
-        case 'week':
-            return history.filter(entry => entry.timestamp >= now - (7 * odMs));
-        case 'older':
-            return history.filter(entry => entry.timestamp < now - (7 * odMs));
-        default:
-            return history;
-    }
 }
 
 function setupIntercept(iframe,tabId) {
@@ -800,9 +755,6 @@ async function loadWebsite(url) {
     if (tabs[tabId] && tabs[tabId].iframe) {
         tabs[tabId].iframe.src = src;
         tabs[tabId].url = fixedurl;
-        if (proxyType==='scramjet') {
-            tabs[tabId].iframe.dataset.pendingUrl = fixedurl;
-        }
         monitorLoad(tabs[tabId].iframe,tabId);
     } else {
         const iframe = document.createElement('iframe');
@@ -811,9 +763,6 @@ async function loadWebsite(url) {
         iframe.dataset.tabId = tabId;
         cArea.appendChild(iframe);
         setupIntercept(iframe,tabId);
-        if (proxyType==='scramjet') {
-            iframe.dataset.pendingUrl=fixedurl;
-        }
         tabs[tabId] = {
             url: fixedurl,
             title: url,
@@ -1083,16 +1032,6 @@ document.getElementById('discordItem').addEventListener('click',()=>{
     window.location.href='https://discord.gg/ZM6mR678wQ';
 });
 
-// about overlay stuff
-document.getElementById('aboutItem').addEventListener('click', () => {
-    drMenu.classList.remove('show');
-    const overlay = document.getElementById('aboutOverlay');
-    overlay.style.display = 'flex';
-    overlay.offsetHeight;
-    overlay.classList.add('show');
-    lucide.createIcons();
-});
-
 document.getElementById('closeAbout').addEventListener('click', () => {
     const overlay = document.getElementById('aboutOverlay');
     overlay.classList.remove('show');
@@ -1275,92 +1214,6 @@ window.addEventListener('message', (event) => {
     }
     if (event.data.type ==='app-load-url') {
         loadWebsite(event.data.url);
-    }
-    if (event.origin==='https://api.classroom.lat' && event.data.type==='scramjet-ready') {
-        console.log('received scramjet-ready');
-        document.querySelectorAll('.bframe').forEach(iframe => {
-            if (iframe.src.includes('embed.html') && iframe.dataset.pendingUrl){
-                const url = iframe.dataset.pendingUrl;
-                iframe.contentWindow.postMessage({
-                    type:'navigate',
-                    url: url,
-                },'https://api.classroom.lat');
-                console.log('sent nav AFTER READY',url);
-                delete iframe.dataset.pendingUrl;
-            }
-        });
-    }
-    if (event.origin==='https://api.classroom.lat' && event.data.type==='open-new-tab') {
-        const url=event.data.url;
-        let decodedUrl = url;
-        if (url.includes('/scramjet/')) {
-            const parts = url.split('/scramjet/');
-            if (parts[1]) {
-                decodedUrl = decodeURIComponent(parts[1]);
-            }
-        }
-        newTabUrl(decodedUrl);
-    }
-    if (event.origin==='https://api.classroom.lat' && event.data.type==='scramjet-url-update') {
-        console.log('URL upd event',event.data.url);
-        const sjUrl = event.data.url;
-        const pageTitle=event.data.title;
-        let decodedUrl=sjUrl;
-        try {
-            const m = sjUrl.match(/\/scram\/(.+)/);
-            if (m) {
-                decodedUrl = decodeURIComponent(m[1]).split('&zx=')[0].split('&no_sw_cr=')[0];
-            }
-        } catch (_) {}
-        if (decodedUrl.includes('api.classroom.lat/embed.html')) return;
-        const activeTab = document.querySelector('.tab.active');
-        if (activeTab) {
-            const tabId=activeTab.dataset.tabId;
-            if (decodedUrl === tabs[tabId]?.url) return;
-            if (tabs[tabId] && tabs[tabId].iframe && tabs[tabId].iframe.src.includes('embed.html')) {
-                //if (tabs[tabId].url!==decodedUrl) {
-                tabs[tabId].url = decodedUrl;
-                tabs[tabId].isFirst = false;
-                    tabs[tabId].url = decodedUrl;
-                    tabs[tabId].isFirst = false;
-                    if (document.activeElement !== urlInput) {
-                        document.getElementById('urlInput').value=decodedUrl;
-                        if (document.getElementById('urlInput').style.display==='none') {
-                            urlDisplay.innerHTML = formatUrl(decodedUrl);
-                        }
-                    }
-                    updLIC(decodedUrl);
-                    updBmBtn();
-                    updNavBtns();
-                    const tab = document.querySelector(`.tab[data-tab-id="${tabId}"]`);
-                    if (tab&&pageTitle) {
-                        tab.querySelector('.tab-tl').textContent=pageTitle;
-                        tabs[tabId].title = pageTitle;
-                    }
-                    try {
-                        let urlObj= new URL(decodedUrl);
-                        const faviconUrl = `${urlObj.origin}/favicon.ico`;
-                        const tab = document.querySelector(`.tab[data-tab-id="${tabId}"]`);
-                        if (tab) {
-                            const favCont = tab.querySelector('.tab-fav');
-                            const favImg= document.createElement('img');
-                            favImg.src=faviconUrl;
-                            favImg.style.width = '16px';
-                            favImg.style.height='16px';
-                            favImg.style.objectFit='contain';
-                            favImg.onload=()=>{
-                                favCont.innerHTML = '';
-                                favCont.appendChild(favImg);
-                            };
-                            favImg.onerror = ()=>{
-                                favCont.innerHTML='<i data-lucide="globe"></i>';
-                                lucide.createIcons();
-                            };
-                        }
-                    } catch (e) {}
-                //}
-            }
-        }
     }
 });
 
