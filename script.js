@@ -1247,6 +1247,8 @@ document.querySelectorAll('.shortcut').forEach(shortcut => {
             loadWebsiteInternal('./settings.html','Settings');
         } else if (title === 'movies') { 
             loadWebsite('https://cineby.gd/'); 
+        } else if (title === 'music') {
+            loadWebsite('https://monochrome.tf/');
         }
     });
 });
