@@ -521,32 +521,38 @@ function addTL(tab) {
     tab.addEventListener('click', (e) => {
         if (e.target.closest('.tab-cl')) {
             if (document.querySelectorAll('.tab').length > 1) {
-                tab.style.animation = 'slideOut 0.2s ease-out';
+                const tabId = tab.dataset.tabId;
+                const wasActive = tab.classList.contains('active');
+                const allTabs = [...document.querySelectorAll('.tab')];
+                allTabs.forEach(t => {
+                    t.style.width=t.getBoundingClientRect().width+'px';
+                    t.style.minWidth ='unset';
+                    t.style.maxWidth='unset';
+                    t.style.transition='width 0.2s cubic-bezier(0.4,0,0.2,1), opacity 0.2s ease';
+                });
+                tab.style.width='0px';
+                tab.style.opacity='0';
+                tab.style.overflow='hidden';
+                tab.style.padding='0';
                 setTimeout(() => {
-                    const tabId = tab.dataset.tabId;
-                    const wasActive = tab.classList.contains('active');
                     const prevTab = tab.previousElementSibling;
                     const nextTab = tab.nextElementSibling;
-                    if (tabs[tabId] && tabs[tabId].iframe) {
+                    if (tabs[tabId].iframe) {
                         tabs[tabId].iframe.remove();
                     }
                     delete tabs[tabId];
                     tab.remove();
+                    document.querySelectorAll('.tab').forEach(t => {
+                        t.style.width='';
+                        t.style.minWidth='';
+                        t.style.maxWidth='';
+                        t.style.transition='';
+                    });
                     if (wasActive) {
-                        if (prevTab && prevTab.classList.contains('tab')) {
-                            prevTab.classList.add('active');
-                            swTab(prevTab.dataset.tabId);
-                        }
-                        else if (nextTab && nextTab.classList.contains('tab')) {
-                            nextTab.classList.add('active');
-                            swTab(nextTab.dataset.tabId);
-                        }
-                        else {
-                            const anyTab = document.querySelector('.tab');
-                            if (anyTab) {
-                                anyTab.classList.add('active');
-                                swTab(anyTab.dataset.tabId);
-                            }
+                        const target = (prevTab?.classList.contains('tab') && prevTab) || (nextTab?.classList.contains('tab') && nextTab) || document.querySelector('.tab');
+                        if (target) {
+                            target.classList.add('active');
+                            swTab(target.dataset.tabId);
                         }
                     }
                 },200);

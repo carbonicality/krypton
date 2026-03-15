@@ -56,6 +56,15 @@ body {
     background: #0f0f0f;
 }
 
+.tab.closing {
+    animation: slideOut 0.2s cubic-bezier(0.4,0,0.2,1) forwards;
+    min-width: 0;
+    max-width: 0;
+    padding: 0;
+    overflow: hidden;
+    transition: min-width 0.2s cubic-bezier(0.4,0,0.2,1), max-width 0.2s cubic-bezier(0.4,0,0.2,1), padding 0.2s cubic-bezier(0.4,0,0.2,1);
+}
+
 .tab.active::before {
     content: '';
     position: absolute;
