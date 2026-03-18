@@ -40,7 +40,7 @@ urlDisplay.className = 'url-display';
 urlContainer.insertBefore(urlDisplay,urlInput.nextSibling);
 let isNav = false;
 let isInt = false;
-let searchEng = 'https://www.google.com/search?q=%s';
+let searchEng = 'https://duckduckgo.com/?q=%s';
 
 let bookmarks = JSON.parse(localStorage.getItem('krypton_bookmarks') || '[]');
 let history = JSON.parse(localStorage.getItem('krypton_history') || '[]');
@@ -505,7 +505,7 @@ function addTL(tab) {
                         t.style.transition='';
                     });
                     if (wasActive) {
-                        const target = (prevTab?.classList.contains('tab') && prevTab) || (nextTab?.classList.contains('tab') && nextTab) || document.querySelector('.tab');
+                        const target = (nextTab?.classList.contains('tab') && nextTab) || (prevTab?.classList.contains('tab')&&prevTab) || document.querySelector('.tab');
                         if (target) {
                             target.classList.add('active');
                             swTab(target.dataset.tabId);
@@ -535,6 +535,13 @@ function updTitle(iframe,tabId) {
     }
 }
 
+tabs[1] = {
+    url:'krypton://new-tab',
+    title: 'New Tab',
+    iframe: null,
+    isFirst: true,
+    cgf: false
+};
 document.querySelectorAll('.tab').forEach(addTL);
 
 document.getElementById('refBtn').addEventListener('click', () => {
@@ -1286,3 +1293,219 @@ document.querySelector('.search-input').addEventListener('keypress',(e)=>{
 });
 
 document.getElementById('searchSendBtn').addEventListener('click',doSearch);
+
+//suggestions
+let suggTimeout = null;
+let activeSuggIdx = -1;
+
+const suggContainer = document.createElement('div');
+suggContainer.className = 'url-suggestions';
+suggContainer.style.display='none';
+document.querySelector('.address-bar').appendChild(suggContainer);
+
+function hideSugg() {
+    suggContainer.style.display='none';
+    suggContainer.innerHTML='';
+    activeSuggIdx=-1;
+}
+
+async function fetchSuggestions(query) {
+    if (!query.trim()) {
+        hideSugg();
+        return;
+    }
+    try {
+        const u = new URL(query);
+        if (u.protocol === 'https:'|| u.protocol==='http:') {
+            hideSugg();
+            return;
+        }
+    } catch (_) {}
+    if (query.includes('.') && !query.includes(' ')) {
+        hideSugg();
+        return;
+    }
+    try {
+        const res = await fetch(
+            `https://corsproxy.io/?url=${encodeURIComponent(`https://duckduckgo.com/ac/?q=${encodeURIComponent(query)}&type=list`)}`,
+            { headers: { 'Accept': 'application/json' } }
+        );
+        const data = await res.json();
+        console.log(data);
+        const suggestions = data[1]?.slice(0,8)||[];
+        renderSuggs(suggestions,query);
+    } catch (e) {
+        hideSugg();
+    }
+}
+
+function renderSuggs(suggestions,query) {
+    suggContainer.innerHTML='';
+    activeSuggIdx = -1;
+    const allSuggs = [query,...suggestions.filter(s=>s!==query)];
+    if (!allSuggs.length) {
+        suggContainer.style.display='none';
+        return;
+    }
+    allSuggs.forEach((s,i)=>{
+        const item = document.createElement('div');
+        item.className='url-sugg-item';
+        item.innerHTML = `<i data-lucide="search"></i><span>${s}</span>`;
+        item.addEventListener('mousedown', (e)=>{
+            e.preventDefault();
+            urlInput.value=s;
+            hideSugg();
+            loadWebsite(s);
+        });
+        suggContainer.appendChild(item);
+    });
+    lucide.createIcons();
+    console.log(suggestions.length,suggContainer);
+    suggContainer.style.display='block';
+}
+
+urlInput.addEventListener('input',()=>{
+    clearTimeout(suggTimeout);
+    const val = urlInput.value;
+    if (!val.trim()) {
+        hideSugg();
+        return;
+    }
+    suggTimeout = setTimeout(()=>fetchSuggestions(val),10);
+});
+
+urlInput.addEventListener('keydown',(e)=>{
+    const items = suggContainer.querySelectorAll('.url-sugg-item');
+    if (!items.length) return;
+    if (e.key==='ArrowDown') {
+        e.preventDefault();
+        activeSuggIdx = Math.min(activeSuggIdx+1,items.length-1);
+    } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        activeSuggIdx = Math.max(activeSuggIdx-1,-1);
+    } else if (e.key==='Escape') {
+        hideSugg();
+        return;
+    } else {
+        return;
+    }
+    items.forEach((el,i)=>el.classList.toggle('active',i===activeSuggIdx));
+    if (activeSuggIdx >= 0) {
+        urlInput.value=items[activeSuggIdx].querySelector('span').textContent;
+    }
+});
+
+urlInput.addEventListener('blur',()=>{
+    setTimeout(hideSugg,150);
+});
+
+urlInput.addEventListener('focus',()=>{
+    const val = urlInput.value;
+    if (val.trim()) fetchSuggestions(val);
+});
+
+let wSuggTimeout = null;
+let wActiveSuggIdx = -1;
+
+const wSuggContainer = document.createElement('div');
+wSuggContainer.className = 'wscreen-suggestions';
+wSuggContainer.style.display = 'none';
+document.querySelector('.search-box').appendChild(wSuggContainer);
+
+function hideWSugg() {
+    wSuggContainer.style.display = 'none';
+    wSuggContainer.innerHTML='';
+    document.querySelector('.search-box').classList.remove('sugg-open');
+    wActiveSuggIdx = -1;
+}
+
+function renderWSuggs(suggestions, query) {
+    wSuggContainer.innerHTML = '';
+    wActiveSuggIdx = -1;
+    const allSuggs = [query, ...suggestions.filter(s => s!==query)];
+    if (!allSuggs.length) {
+        wSuggContainer.style.display='none';
+        return;
+    }
+    allSuggs.forEach((s) => {
+        const item = document.createElement('div');
+        item.className = 'wscreen-sugg-item';
+        item.innerHTML = `<i data-lucide="search"></i><span>${s}</span>`;
+        item.addEventListener('mousedown',(e) => {
+            e.preventDefault();
+            searchInput.value=s;
+            hideWSugg();
+            loadWebsite(s);
+        });
+        wSuggContainer.appendChild(item);
+    });
+    lucide.createIcons();
+    document.querySelector('.search-box').classList.add('sugg-open');
+    wSuggContainer.style.display='block';
+}
+
+async function fetchWSuggestions(query) {
+    if (!query.trim()) {
+        hideWSugg();
+        return;
+    }
+    try {
+        const u = new URL(query);
+        if (u.protocol === 'https:'|| u.protocol==='http:') {
+            hideWSugg();
+            return;
+        }
+    } catch (_) {}
+    if (query.includes('.') && !query.includes(' ')) {
+        hideWSugg();
+        return;
+    }
+    try {
+        const res = await fetch(
+            `https://corsproxy.io/?url=${encodeURIComponent(`https://duckduckgo.com/ac/?q=${encodeURIComponent(query)}&type=list`)}`,
+            { headers: { 'Accept': 'application/json' } }
+        );
+        const data = await res.json();
+        console.log(data);
+        const suggestions = data[1]?.slice(0,8)||[];
+        renderWSuggs(data[1]?.slice(0,8)||[],query);
+    } catch (e) {
+        hideWSugg();
+    }
+}
+
+searchInput.addEventListener('input',()=>{
+    clearTimeout(wSuggTimeout);
+    const val = searchInput.value;
+    if (!val.trim()) {
+        hideWSugg();
+        return;
+    }
+    wSuggTimeout = setTimeout(()=>fetchWSuggestions(val),10);
+});
+
+searchInput.addEventListener('focus',()=>{
+    const val = searchInput.value;
+    if (val.trim()) fetchWSuggestions(val);
+});
+
+searchInput.addEventListener('keydown',(e)=>{
+    const items = wSuggContainer.querySelectorAll('.wscreen-sugg-item');
+    if (!items.length) return;
+    if (e.key==='ArrowDown') {
+        e.preventDefault();
+        wActiveSuggIdx = Math.min(wActiveSuggIdx+1,items.length-1);
+    } else if (e.key==='ArrowUp') {
+        e.preventDefault();
+        wActiveSuggIdx=Math.max(wActiveSuggIdx-1,-1);
+    } else if (e.key === 'Escape') {
+        hideWSugg();
+        return;
+    } else {return;}
+    items.forEach((el,i)=>el.classList.toggle('active',i===wActiveSuggIdx));
+    if (wActiveSuggIdx >= 0) {
+        searchInput.value = items[wActiveSuggIdx].querySelector('span').textContent;
+    }
+});
+
+searchInput.addEventListener('blur',()=>setTimeout(hideWSugg,200));
