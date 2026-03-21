@@ -21,7 +21,7 @@ function appendMsg(role,text) {
     <div class="msg-bubble"></div>`;
     messagesEl.appendChild(msg);
     const bubble = msg.querySelector('.msg-bubble');
-    bubble.textContent = marked.parse(text);
+    bubble.innerHTML = role === 'ai'?marked.parse(text):text;
     messagesEl.scrollTop=messagesEl.scrollHeight;
     return msg.querySelector('.msg-bubble');
 }
@@ -31,7 +31,7 @@ function showTyping() {
     wrapper.className='msg ai';
     wrapper.id='typingInd';
     wrapper.innerHTML = `
-    <div class="msg-label">krypton ai</div>
+    <div class="msg-label">krypton AI</div>
     <div class="typing-ind">
         <div class="typing-dot"></div>
         <div class="typing-dot"></div>
