@@ -26,7 +26,7 @@ scramjet.init();
 
 //MAKE SURE YOU CHANGE THESE. ANNOUNCEMENT VARS
 //DEAR VET PLEASE QUOTE THE STRINGS
-let anncId = 3;
+let anncId = 4;
 let anncMsg = "Hey there! Running krypton is expensive, and in order to keep our servers and domains up and running, we've had to add ads. We don't like ads either, but we need them in order to keep krypton free and accessible to everyone. Sorry! We'll add a toggle to turn off ads soon.";
 let anncTitle = "Advertisements";
 
