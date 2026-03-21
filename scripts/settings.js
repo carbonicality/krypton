@@ -31,6 +31,17 @@ inputs.forEach(input => {
     });
 });
 
+const tglAds= document.getElementById('tglAds');
+if (localStorage.getItem('krypton_ads')!=='false') {
+    tglAds.classList.add('active');
+}
+tglAds.addEventListener('click',() => {
+    tglAds.classList.toggle('active');
+    const enabled = tglAds.classList.contains('active');
+    localStorage.setItem('krypton_ads',enabled?'true':'false');
+    window.parent.location.reload();
+});
+
 const clearBtn = document.getElementById('sudo-rm');
 if (clearBtn) {
     clearBtn.addEventListener('click',()=>{
