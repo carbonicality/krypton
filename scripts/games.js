@@ -266,10 +266,6 @@ async function openGame(game) {
     console.log('zone frame',document.getElementById('zoneFrame'));
     console.log('close game',document.getElementById('closeGame'));
     try {
-        if (game.url.startsWith("http") && !game.url.includes("cdn.jsdelivr.net")) {
-            window.open(game.url,"_blank");
-            return;
-        }
         const res = await fetch(game.url);
         const html = await res.text();
         const frame = document.getElementById('zoneFrame');
@@ -281,6 +277,11 @@ async function openGame(game) {
         frame.contentDocument.open();
         frame.contentDocument.write(html);
         frame.contentDocument.close();
+        document.querySelector('.gametainer').style.display='none';
+        if (window.pJSDom && window.pJSDom.length > 0) {
+            window.pJSDom[0].pJS.fn.vendors.destroypJS();
+            window.pJSDom=[];
+        }
 
         //ad block!
         const removeAds = frame.contentDocument.createElement('script');
@@ -321,6 +322,8 @@ function closeGame() {
     document.body.appendChild(nFrame);
     document.getElementById('closeGame').style.display='none';
     document.getElementById('fsBtn').style.display='none';
+    document.querySelector('.gametainer').style.display='block';
+    initParticles();
 }
 
 function tglFullscreen() {
@@ -407,14 +410,6 @@ window.addEventListener('DOMContentLoaded',()=>{
             lucide.createIcons();
         }
     }
-});
-
-let sTimeout;
-searchInput.addEventListener('input',(e)=>{
-    clearTimeout(sTimeout);
-    sTimeout = setTimeout(()=>{
-        searchGames(e.target.value.trim());
-    },150);
 });
 
 function partCount() {

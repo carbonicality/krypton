@@ -17,11 +17,11 @@ function appendMsg(role,text) {
     const msg = document.createElement('div');
     msg.className = `msg ${role}`;
     msg.innerHTML = `
-    <div class="msg-label">${role === 'user' ? 'you' : 'krypton ai'}</div>
+    <div class="msg-label">${role === 'user' ? 'you' : `krypton AI - ${currModel}`}</div>
     <div class="msg-bubble"></div>`;
     messagesEl.appendChild(msg);
     const bubble = msg.querySelector('.msg-bubble');
-    bubble.textContent = text;
+    bubble.textContent = marked.parse(text);
     messagesEl.scrollTop=messagesEl.scrollHeight;
     return msg.querySelector('.msg-bubble');
 }
@@ -88,7 +88,6 @@ async function sendMsg() {
         const reply = data.choices?.[0]?.message?.content||'something went wrong.';
         convoHistory.push({role:'assistant',content:reply});
         const bubble = appendMsg('ai',reply);
-        bubble.textContent=reply;
     } catch (err) {
         removeTyping();
         const bubble = appendMsg('ai','');
