@@ -17,40 +17,6 @@ if (navigator.serviceWorker.controller) {
     console.log('sw controlling from',navigator.serviceWorker.controller.scriptURL);
 }
 
-function initCardObserver() {
-    if (cardObserver) cardObserver.disconnect();
-    cardObserver=new IntersectionObserver((entries)=>{
-        entries.forEach(entry=>{
-            const card = entry.target;
-            if (entry.isIntersecting) {
-                if (!card.dataset.loaded) {
-                    const icon =card.dataset.icon;
-                    const name =card.dataset.name;
-                    const gicon=card.querySelector('.gicon');
-                    if (!icon) {
-                        gicon.innerHTML =genFallback(name);
-                    } else {
-                        const img=document.createElement('img');
-                        img.alt=name;
-                        img.loading='lazy';
-                        img.addEventListener('error',()=>{
-                            gicon.innerHTML=genFallback(name);
-                        });
-                        img.src=icon;
-                        gicon.appendChild(img);
-                    }
-                    card.dataset.loaded='true';
-                    cardObserver.unobserve(card);
-                }
-            }
-        });
-    },{
-        root:null,
-        rootMargin:'200px',
-        threshold:0
-    });
-}
-
 async function fetchGames() {
     try {
         let zonesUrl = "https://cdn.jsdelivr.net/gh/gn-math/assets@main/zones.json";
