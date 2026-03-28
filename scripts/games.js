@@ -275,22 +275,24 @@ async function openGame(game) {
             window.pJSDom[0].pJS.fn.vendors.destroypJS();
             window.pJSDom=[];
         }
-
-        //ad block!
-        const removeAds = frame.contentDocument.createElement('script');
-        removeAds.textContent=`
-        function removeAds() {
-            ['sidebarad1','sidebarad2'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.remove();
-            });
+        
+        if (frame.contentDocument.body){
+            frame.contentDocument.body.style.backgroundColor = '#0a0a0a';
+            //ad block!
+            const removeAds = frame.contentDocument.createElement('script');
+            removeAds.textContent=`
+            function removeAds() {
+                ['sidebarad1','sidebarad2'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.remove();
+                });
+            }
+            removeAds();
+            const observer = new MutationObserver(removeAds);
+            observer.observe(document.body,{childList:true,subtree:true});`;
+            frame.contentDocument.body.appendChild(removeAds);
         }
-        removeAds();
-        const observer = new MutationObserver(removeAds);
-        observer.observe(document.body,{childList:true,subtree:true});`;
-        frame.contentDocument.body.appendChild(removeAds);
-
-        frame.contentDocument.body.style.backgroundColor = '#0a0a0a';
+        
         const closeBtn = document.getElementById('closeGame');
         if (closeBtn) {
             closeBtn.style.display='block';

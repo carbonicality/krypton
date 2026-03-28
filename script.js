@@ -1255,7 +1255,7 @@ document.querySelectorAll('.shortcut').forEach(shortcut => {
         } else if (title === 'movies') { 
             loadWebsite('https://cineby.gd/'); 
         } else if (title === 'music') {
-            loadWebsite('https://monochrome.tf/');
+            loadWebsite('https://monochrome.samidy.com/');
         }
     });
 });
