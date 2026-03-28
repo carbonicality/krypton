@@ -6,14 +6,49 @@ let aGames=[];
 const COVER_URL = "https://cdn.jsdelivr.net/gh/gn-math/covers@main";
 const HTML_URL = "https://cdn.jsdelivr.net/gh/gn-math/html@main";
 const CKV_URL = "https://cdn.jsdelivr.net/gh/WanoCapy/ChickenKingsVault@main";
-const CKV_ICONS_URL = "https://raw.githubusercontent.com/carbonicality/ChickenKingsVault/main";
+const CKV_ICONS_URL = "https://cdn.jsdelivr.net/gh/carbonicality/ChickenKingsVault@main";
 const HYDRA_URL = "https://cdn.jsdelivr.net/gh/Hydra-Network/hydra-assets@main";
 
 let currProvider = localStorage.getItem('krypton_provider') || 'ckv';
+let cardObserver = null;
 
 console.log('sw controlled:',!!navigator.serviceWorker.controller);
 if (navigator.serviceWorker.controller) {
     console.log('sw controlling from',navigator.serviceWorker.controller.scriptURL);
+}
+
+function initCardObserver() {
+    if (cardObserver) cardObserver.disconnect();
+    cardObserver=new IntersectionObserver((entries)=>{
+        entries.forEach(entry=>{
+            const card = entry.target;
+            if (entry.isIntersecting) {
+                if (!card.dataset.loaded) {
+                    const icon =card.dataset.icon;
+                    const name =card.dataset.name;
+                    const gicon=card.querySelector('.gicon');
+                    if (!icon) {
+                        gicon.innerHTML =genFallback(name);
+                    } else {
+                        const img=document.createElement('img');
+                        img.alt=name;
+                        img.loading='lazy';
+                        img.addEventListener('error',()=>{
+                            gicon.innerHTML=genFallback(name);
+                        });
+                        img.src=icon;
+                        gicon.appendChild(img);
+                    }
+                    card.dataset.loaded='true';
+                    cardObserver.unobserve(card);
+                }
+            }
+        });
+    },{
+        root:null,
+        rootMargin:'200px',
+        threshold:0
+    });
 }
 
 async function fetchGames() {
@@ -245,19 +280,11 @@ function createGC(game) {
     if (localStorage.getItem('krypton_anims') === 'false') {
         card.style.transition = 'none';
     }
-    card.innerHTML = `
-    <div class="gicon">
-        <img src="${game.icon}" alt="${game.name}" loading="lazy">
-    </div>
+    card.dataset.icon=game.icon||'';
+    card.dataset.name=game.name;
+    card.innerHTML=`
+    <div class="gicon"></div>
     <div class="game-nm">${game.name}</div>`;
-    const img = card.querySelector('img');
-    if (!game.icon) {
-        img.parentElement.innerHTML = genFallback(game.name);
-    } else {
-        img.addEventListener('error',()=>{
-            img.parentElement.innerHTML = genFallback(game.name);
-        });
-    }
     card.addEventListener('click',()=>openGame(game));
     return card;
 }
@@ -307,8 +334,12 @@ async function openGame(game) {
     } catch (err) {
         console.error('error fetching game',err);
         const frame = document.getElementById('zoneFrame');
-        if (!frame || frame.style.display==='none') {
-            alert("Failed to load game! :(");
+        if (frame || frame.style.display!=='block') {
+            frame.style.display='none';
+            document.querySelector('.gametainer').style.display='block';
+            document.getElementById('closeGame').style.display='none';
+            document.getElementById('fsBtn').style.display='none';
+            console.log('(potentially) failed to load game!');
         }
     }
 }
@@ -364,15 +395,78 @@ function renderGames() {
     if (fGames.length===0) {
         grid.style.display='none';
         emptyState.style.display='flex';
-    } else {
-        grid.style.display='grid';
-        emptyState.style.display='none';
-        fGames.forEach((game,index)=>{
-            const card = createGC(game);
-            card.style.animationDelay=`${index*0.05}s`;
+        return;
+    }
+    grid.style.display='grid';
+    emptyState.style.display='none';
+    let currIdx = 0;
+    const BATCH=40;
+    function loadBatch() {
+        const batch =fGames.slice(currIdx,currIdx+BATCH);
+        if (batch.length===0) return;
+        batch.forEach((game,i)=>{
+            const card=createGC(game);
+            card.style.animationDelay=`${i*0.05}s`;
             grid.appendChild(card);
         });
+        currIdx+=BATCH;
+        const old= grid.querySelector('.scroll-batch');
+        if (old) old.remove();
+        if (currIdx < fGames.length) {
+            const batch = document.createElement('div');
+            batch.className='scroll-batch';
+            batch.style.cssText='width:100%;height:1px;grid-column:1/-1;';
+            grid.appendChild(batch);
+            batchObserver.observe(batch);
+        }
     }
+    const batchObserver = new IntersectionObserver((entries)=>{
+        entries.forEach(entry=>{
+            if (entry.isIntersecting) {
+                batchObserver.unobserve(entry.target);
+                entry.target.remove();
+                loadBatch();
+            }
+        });
+    },{rootMargin:'300px'});
+    cardObserver = new IntersectionObserver((entries)=>{
+        entries.forEach(entry=>{
+            const card=entry.target;
+            const icon =card.dataset.icon;
+            const name =card.dataset.name;
+            const gicon=card.querySelector('.gicon');
+            if (entry.isIntersecting) {
+                if (!card.dataset.loaded) {
+                    if (!icon) {
+                        gicon.innerHTML=genFallback(name);
+                    } else {
+                        const img =document.createElement('img');
+                        img.alt=name;
+                        img.addEventListener('error',()=>{
+                            gicon.innerHTML=genFallback(name);
+                        });
+                        img.src=icon;
+                        gicon.appendChild(img);
+                    }
+                    card.dataset.loaded='true';
+                }
+            } else {
+                if (card.dataset.loaded) {
+                    gicon.innerHTML='';
+                    delete card.dataset.loaded;
+                }
+            }
+        });
+    },{rootMargin:'400px',threshold:0});
+    const _origAppend=grid.appendChild.bind(grid);
+    grid.appendChild=(el)=>{
+        _origAppend(el);
+        if (el.classList&&el.classList.contains('gcard')) {
+            cardObserver.observe(el);
+        }
+        return el;
+    };
+    loadBatch();
     lucide.createIcons();
 }
 
