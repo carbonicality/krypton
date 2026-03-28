@@ -13,6 +13,43 @@ let isLoading = false;
 
 lucide.createIcons();
 
+//MAKE SURE YOU CHANGE THESE. ANNOUNCEMENT VARS
+//DEAR VET PLEASE QUOTE THE STRINGS
+let anncId = 4;
+let anncMsg = "Hey there! Running krypton is expensive, and in order to keep our servers and domains up and running, we've had to add ads. We don't like ads either, but we need them in order to keep krypton free and accessible to everyone. Sorry! We'll add a toggle to turn off ads soon.";
+let anncTitle = "Advertisements";
+
+//notification stuff
+const notifCont = document.createElement('div');
+notifCont.className = 'notif-cont';
+document.body.appendChild(notifCont);
+
+function showNotif(title,body,duration=4000) {
+    const notif=document.createElement('div');
+    notif.className='notif';
+    notif.innerHTML=`
+    <div class="notif-tl">${title}</div>
+    <div class="notif-body">${body}</div>
+    <div class="notif-btrack">
+        <div class="notif-bar" style="width:100%;transition-duration:${duration}ms;"></div>
+    </div>`;
+    notifCont.appendChild(notif);
+    requestAnimationFrame(()=>{
+        requestAnimationFrame(()=>{
+            notif.querySelector('.notif-bar').style.width='0%';
+        });
+    });
+    const dismiss = ()=>{
+        notif.classList.add('hiding');
+        setTimeout(()=>notif.remove(),300);
+    };
+    const timer = setTimeout(dismiss,duration);
+    notif.addEventListener('click',()=>{
+        clearTimeout(timer);
+        dismiss();
+    });
+}
+
 const { ScramjetController }=$scramjetLoadController();
 const scramjet=new ScramjetController({
     files: {
@@ -24,11 +61,27 @@ const scramjet=new ScramjetController({
 });
 scramjet.init();
 
-//MAKE SURE YOU CHANGE THESE. ANNOUNCEMENT VARS
-//DEAR VET PLEASE QUOTE THE STRINGS
-let anncId = 4;
-let anncMsg = "Hey there! Running krypton is expensive, and in order to keep our servers and domains up and running, we've had to add ads. We don't like ads either, but we need them in order to keep krypton free and accessible to everyone. Sorry! We'll add a toggle to turn off ads soon.";
-let anncTitle = "Advertisements";
+let wasm_ready=null;
+async function preloadWasm() {
+    if (wasm_ready) return wasm_ready;
+    wasm_ready=(async ()=>{
+        try {
+            const libcurl=await import('/sail/libcurl/index.mjs');
+            if (typeof libcurl.load_wasm==='function') {
+                await libcurl.load_wasm('/sail/scram/scramjet.wasm.wasm');
+            } else if (typeof libcurl.default?.load_wasm==='function') {
+                await libcurl.default.load_wasm('/sail/scram/scramjet.wasm.wasm');
+            }
+            sjInit=true;
+            showNotif('Initialised','Scramjet initialised successfully!');
+        } catch (e) {
+            console.warn('wasm preload failed',e);
+            throw e;
+        }
+    })();
+    return wasm_ready;
+}
+preloadWasm();
 
 let tabCount = 1;
 let tabs = {};
@@ -97,11 +150,12 @@ async function initProxy() {
             await navigator.serviceWorker.register('/sail/sw.js');
             swReg=true;
         }
+        await preloadWasm();
         const conn = getConnection();
-        if ((await conn.getTransport())!=='/sail/libcurl/index.mjs') {
-            await conn.setTransport('/sail/libcurl/index.mjs',[{websocket:localStorage.getItem('krypton_wispUrl')||'wss://wisp.classroom.lat/'}]);
-            wasm: '/sail/scram/scramjet.wasm.wasm'
-        }
+        await conn.setTransport('/sail/libcurl/index.mjs',[{
+            websocket: localStorage.getItem('krypton_wispUrl')||'wss://wisp.classroom.lat/',
+            wasm:'/sail/scram/scramjet.wasm.wasm'
+        }]);
     }
 }
 

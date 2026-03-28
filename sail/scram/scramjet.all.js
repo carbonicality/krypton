@@ -4332,173 +4332,461 @@ ${l}`;
                     setTimeout(() => btn.textContent = 'Copy', 2000);
                 });
         `;
-          return `<!DOCTYPE html>
-            <html>
-                <head>
-                    <meta charset="utf-8" />
-                    <title>Scramjet</title>
-                    <link rel="stylesheet" href="/assets/css/font.css">
-                </head>
-                <body>
-                    <style>
-        :root {
-    --deep: #000000;
-    --shallow: rgb(10 10 10);
-    --beach: #f1e8e1;
-    --shore: #b1a8a1;
-    --accent: #ffffff;
-    --font-monospace: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-}
+          return `
+<!DOCTYPE html>
+<html>
+    <!--this script is for reference for the scramjet error page-->
+    <head>
+        <meta charset="UTF-8">
+        <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+        <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap" rel="stylesheet">
+        <style>
+            *{
+                margin:0;
+                padding:0;
+                box-sizing:border-box;
+            }
 
-*:not(div, p, span, ul, li, i, span) {
-    background-color: var(--deep);
-    color: var(--beach);
-    font-family: var(--font-sans);
-}
+            body {
+                font-family:'Geist';
+                background:#000;
+                color:#fff;
+                height:100vh;
+                overflow:hidden;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+            }
 
-textarea,
-button {
-    background-color: var(--shallow);
-    border-radius: 1em;
-    padding: 1em;
-    border: none;
-    appearance: none;
-    font-family: Arial;
-    color: var(--beach);
-}
+            #particles-js {
+                position:fixed;
+                inset:0;
+                z-index:0;
+            }
 
-button.primary {
-    background-color: var(--accent);
-    color: var(--deep);
-    font-weight: bold;
-}
+            .bg {
+                position:fixed;
+                inset:0;
+                background:radial-gradient(ellipse at top,#0a1628 0%,#000 60%);
+                z-index:0;
+                pointer-events:none;
+            }
 
-textarea {
-    resize: none;
-    height: 20em;
-    text-align: left;
-    font-family: var(--font-monospace);
-}
+            .main {
+                position:relative;
+                z-index:1;
+                display:flex;
+                max-width:820px;
+                width:100%;
+                margin:24px;
+                background:rgba(10,10,10,0.8);
+                border:1px solid #1a1a1a;
+                border-radius:14px;
+                backdrop-filter:blur(24px);
+                overflow:hidden;
+                animation:fadeUp 0.4s cubic-bezier(0.4,0,0.2,1) both;
+            }
 
-body {
-    width: 100vw;
-    height: 100vh;
-    justify-content: center;
-    align-items: center;
-}
+            .stack-side {
+                width:320px;
+                flex-shrink:0;
+                border-right:1px solid #1a1a1a;
+                padding:24px;
+                display:flex;
+                flex-direction:column;
+                gap:14px;
+            }
 
-body,
-html,
-#inner {
-    display: flex;
-    align-items: center;
-    flex-direction: column;
-    gap: 0.5em;
-    overflow: hidden;
-}
+            .side-label {
+                font-size:10px;
+                font-weight:600;
+                color: #383838;
+            }
 
-#inner {
-    z-index: 100;
-}
+            .stack-text {
+                font-family:monospace;
+                font-size:11.5px;
+                line-height:1.8;
+                color:#505050;
+                white-space:pre-wrap;
+                word-break:break-all;
+                flex:1;
+            }
 
-#cover {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background-color: color-mix(in srgb, var(--deep) 70%, transparent);
-    z-index: 99;
-}
+            .copy-btn {
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                gap:6px;
+                padding:7px;
+                background:transparent;
+                border:1px solid #1a1a1a;
+                border-radius:7px;
+                cursor:pointer;
+                font-family:'Geist';
+                font-size:12px;
+                color:#383838;
+                transition: all 0.2s ease;
+            }
 
-#info {
-    display: flex;
-    flex-direction: row;
-    align-items: flex-start;
-    gap: 1em;
-    font-family: Arial;
-}
+            .copy-btn:hover{
+                background:#0f0f0f;
+                color:#606060;
+                border-color:#2a2a2a;
+            }
 
-#version-wrapper {
-    width: auto;
-    text-align: right;
-    position: absolute;
-    top: 0.5rem;
-    right: 0.5rem;
-    font-size: 0.8rem;
-    color: var(--shore) !important;
+            .copy-btn.copied {
+                color:#34d399;
+                border-color: rgba(52,211,153,0.2);
+            }
 
-    i {
-        background-color: color-mix(in srgb, var(--deep), transparent 50%);
-        border-radius: 9999px;
-        padding: 0.2em 0.5em;
-    }
+            .info-side {
+                flex:1;
+                padding:28px;
+                display:flex;
+                flex-direction:column;
+                gap:22px;
+            }
 
-    z-index: 101;
-}
+            .err-hdr h1 {
+                font-size:34px;
+                font-weight:700;
+                letter-spacing:-0.03em;
+                background: #60a5fa;
+                -webkit-background-clip:text;
+                -webkit-text-fill-color:transparent;
+                background-clip:text;
+                line-height:1;
+                margin-bottom:5px;
+            }
 
-a {
-    font-family: Arial;
-    font-weight: bold;
-}
+            .err-hdr .sub {
+                font-size:13px;
+                color:#505050;
+            }
 
-#errorTrace-wrapper {
-    position: relative;
-    width: fit-content;
-}
-#copy-button {
-    position: absolute;
-    top: 0.5em;
-    right: 0.5em;
-    padding: 0.23em;
-    cursor: pointer;
-    opacity: 0;
-    transition: opacity 0.4s;
-    font-size: 0.9em;
-}
+            .err-hdr .sub b {
+                color:#808080;
+                font-weight:500;
+            }
 
-#errorTrace-wrapper:hover #copy-button {
-    opacity: 1;
-}
-    </style>
-</body>
-<div id="cover"></div>
-<div id="inner">
-    <h1 id="errorTitle">Uh oh!</h1>
-    <p>There was an error loading <b id="fetchedURL"></b></p>
-    <!-- <p id="errorMessage">Internal Server Error</p> -->
+            .section-label {
+                font-size:10px;
+                font-weight:500;
+                color:#383838;
+                margin-bottom:5px;
+            }
 
-    <div id="info">
-        <div id="errorTrace-wrapper">
-            <textarea id="errorTrace" cols="40" rows="10" readonly></textarea>
-            <button id="copy-button" class="primary">Copy</button>
+            .url-box {
+                display:inline-flex;
+                align-items:center;
+                gap:7px;
+                background:rgba(15,15,15,0.7);
+                border:1px solid #1a1a1a;
+                border-radius: 7px;
+                padding:7px 11px;
+                font-family:monospace;
+                font-size:12px;
+            }
+
+            .url-box svg {
+                width:12px;
+                height:12px;
+                flex-shrink:0;
+                color:#60a5fa;
+                stroke:currentColor;
+                stroke-width:2;
+                stroke-linecap:round;
+                stroke-linejoin:round;
+                fill:none;
+            }
+
+            .url-host {
+                color: #60a5fa;
+            }
+
+            .url-proto {
+                color:#404040;
+            }
+
+            .url-path {
+                color:#404040;
+            }
+
+            .err-msg {
+                font-family:monospace;
+                font-size:11.5px;
+                color:#404040;
+                margin-top:5px;
+            }
+
+            .tips-sec {
+                display:flex;
+                flex-direction:column;
+            }
+
+            .tips-glabel {
+                font-size:10px;
+                color:#303030;
+                letter-spacing:0.06em;
+                font-weight:500;
+                margin-bottom:5px;
+            }
+
+            .tip-item {
+                font-size:12.5px;
+                color:#505050;
+                padding:3px 0;
+            }
+
+            .tip-item a {
+                color:#60a5fa;
+                text-decoration:none;
+            }
+
+            .tip-item a:hover {
+                text-decoration:underline;
+            }
+
+            .tips-div {
+                height:1px;
+                background:#111;
+                margin:10px 0;
+            }
+
+            .actions {
+                display:flex;
+                gap:8px;
+            }
+
+            .btn-reload {
+                display:flex;
+                align-items:center;
+                gap:7px;
+                padding:8px 18px;
+                background: #60a5fa;
+                color:#000;
+                font-family:'Geist';
+                font-size:13px;
+                font-weight:600;
+                border:none;
+                border-radius:8px;
+                cursor:pointer;
+                transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+            }
+
+            .btn-reload:hover {
+                background:#93c5fd;
+                transform:translateY(-1px);
+            }
+
+            .btn-reload:active {
+                transform:scale(0.97);
+            }
+
+            #errorTrace {
+                background:transparent;
+                border:none;
+                outline:none;
+                resize:none;
+                width:100%;
+                height:100%;
+                color:#fff;
+                font-family:monospace;
+                font-size:11.5px;
+                white-space:pre-wrap;
+                scrollbar-width: thin;
+                scrollbar-color:#60a5fa transparent;
+            }
+
+            #errorTrace::-webkit-scrollbar {
+                width:6px;
+            }
+
+            #errorTrace::-webkit-scrollbar-track {
+                background: transparent;
+            }
+
+            #errorTrace::-webkit-scrollbar-thumb {
+                background-color: #60a5fa;
+                border-radius:999px;
+            }
+
+            #errorTrace::-webkit-scrollbar-thumb:hover {
+                background: #93c5fd;
+            }
+
+            svg {
+                stroke:currentColor;
+                stroke-width:2;
+                stroke-linecap:round;
+                stroke-linejoin:round;
+                fill:none;
+            }
+
+            @keyframes fadeUp {
+                from{opacity:0;transform:translateY(12px);}
+                to{opacity:1;transform:translateY(0);}
+            }
+        </style>
+    </head>
+    <body>
+        <div class="bg"></div>
+        <div id="particles-js"></div>
+        <div class="main">
+            <div class="stack-side">
+                <div class="side-label">stack trace:</div>
+                <textarea class="stack-text" id="errorTrace" readonly></textarea>
+                <button class="copy-btn" id="copy-button">
+                    Copy
+                </button>
+            </div>
+            <div class="info-side">
+                <div class="err-hdr">
+                    <h1>uh oh!</h1>
+                    <p class="sub">
+                        There was an error loading <b id="fetchedURL"></b>
+                    </p>
+                </div>
+                <div>
+                    <div class="section-label">URL:</div>
+                    <div class="url-box">
+                        <span id="urlDisplay"></span>
+                    </div>
+                    <div class="err-msg" id="errorMessage"></div>
+                </div>
+                <div class="tips-sec">
+                    <div class="tips-glabel">Try:</div>
+                    <div class="tip-item">Checking your internet connection</div>
+                    <div class="tip-item">Verifying you entered the correct address</div>
+                    <div class="tip-item">Clearing the site data</div>
+                    <div class="tip-item">Verifying the Wisp server isn't censored</div>
+                    <div class="tip-item">Changing your Wisp server in settings</div>
+                    <div class="tips-div"></div>
+                    <div class="tips-glabel">If you're the owner of <span id="hostname"></span>:</div>
+                    <div class="tip-item">Restarting your server</div>
+                    <div class="tip-item">Updating Scramjet</div>
+                </div>
+                <div class="actions">
+                    <button class="btn-reload" id="reload">Reload</button>
+                </div>
+            </div>
         </div>
-        <div id="troubleshooting">
-            <p>Try:</p>
-            <ul>
-                <li>Checking your internet connection</li>
-                <li>Verifying you entered the correct address</li>
-                <li>Clearing the site data</li>
-                <li>Contacting <b id="hostname"></b>'s owner</li>
-                <li>Verify the Wisp server isn't censored</li>
-                <li>Changing your Wisp server in the settings</li>
-            </ul>
-            <p>If you're the owner of <b id="hostname"></b>, try:</p>
-            <ul>
-                <li>Restarting your server</li>
-                <li>Updating Scramjet</li>
-                <li>Troubleshooting the error on the <a href="https://github.com/MercuryWorkshop/scramjet"
-                        target="_blank">GitHub repository</a></li>
-            </ul>
-        </div>
-    </div>
-    <br>
-    <button id="reload" class="primary">Reload</button>
-</div>
-<p id="version-wrapper"><i>Scramjet v<span id="version"></span> (build <span id="build"></span>)</i></p>
-                    <script src="${
-                      "data:application/javascript," + encodeURIComponent(r)
-                    }"></script>
-                </body>
-            </html>
+        <script>
+                particlesJS('particles-js', {
+                particles: {
+                    number: {
+                        value: 120,
+                        density: {
+                            enable: true,
+                            value_area: 800
+                        }
+                    },
+                    color: {
+                        value: ['#60a5fa', '#93c5fd', '#dbeafe', '#fff']
+                    },
+                    shape: {
+                        type: 'circle'
+                    },
+                    opacity: {
+                        value: 0.6,
+                        random: true,
+                        anim: {
+                            enable: true,
+                            speed: 0.8,
+                            opacity_min: 0.1,
+                            sync: false
+                        }
+                    },
+                    size: {
+                        value: 2.5,
+                        random: true,
+                        anim: {
+                            enable: true,
+                            speed: 2,
+                            size_min: 0.3,
+                            sync: false
+                        }
+                    },
+                    line_linked: {
+                        enable: true,
+                        distance: 120,
+                        color: '#60a5fa',
+                        opacity: 0.15,
+                        width: 1
+                    },
+                    move: {
+                        enable: true,
+                        speed: 0.8,
+                        direction: 'none',
+                        random: true,
+                        straight: false,
+                        out_mode: 'out',
+                        bounce: false,
+                        attract: {
+                            enable: true,
+                            rotateX: 600,
+                            rotateY: 1200
+                        }
+                    }
+                },
+                interactivity: {
+                    detect_on: 'canvas',
+                    events: {
+                        onhover: {
+                            enable: true,
+                            mode: 'grab'
+                        },
+                        onclick: {
+                            enable: true,
+                            mode: 'push'
+                        },
+                        resize: true
+                    },
+                    modes: {
+                        grab: {
+                            distance: 140,
+                            line_linked: {
+                                opacity: 0.4
+                            }
+                        },
+                        push: {
+                            particles_nb: 4
+                        }
+                    }
+                },
+                retina_detect: true
+            });
+
+            const observer=new MutationObserver(()=>{
+                const url=document.getElementById('fetchedURL')?.textContent;
+                if (!url) return;
+                try {
+                    const u = new URL(url);
+                    document.getElementById('urlDisplay').innerHTML =
+                    '<span class="url-proto">' + u.protocol + '//' + '</span>' +
+                    '<span class="url-host">' + u.hostname + '</span>' +
+                    '<span class="url-path">' + u.pathname + '</span>';
+                } catch {
+                    document.getElementById('urlDisplay').textContent=url;
+                }
+            });
+            observer.observe(document.getElementById('fetchedURL'),{
+                childList:true
+            });
+
+            document.getElementById('copy-button')?.addEventListener('click',async()=>{
+                const el = document.getElementById('errorTrace');
+                const text=el.value;
+                await navigator.clipboard.writeText(text);
+                const btn=document.getElementById('copy-button');
+                btn.textContent='Copied!';
+                setTimeout(()=>btn.textContent='Copy',2000);
+            });
+        </script>
+        <script src="${"data:application/javascript," + encodeURIComponent(r)}"></script>
+    </body>
+</html>
         `;
         }
         function i(e, t) {
