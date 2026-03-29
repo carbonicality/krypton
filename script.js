@@ -15,8 +15,9 @@ lucide.createIcons();
 
 //MAKE SURE YOU CHANGE THESE. ANNOUNCEMENT VARS
 //DEAR VET PLEASE QUOTE THE STRINGS
-let anncId = 4;
-let anncMsg = "Hey there! Running krypton is expensive, and in order to keep our servers and domains up and running, we've had to add ads. We don't like ads either, but we need them in order to keep krypton free and accessible to everyone. Sorry! We'll add a toggle to turn off ads soon.";
+// haha no i wont
+let anncId = 5;
+let anncMsg = "Removed ads. They were so fking annoying even for me. -Veteraning";
 let anncTitle = "Advertisements";
 
 //notification stuff
