@@ -16,8 +16,8 @@ lucide.createIcons();
 //MAKE SURE YOU CHANGE THESE. ANNOUNCEMENT VARS
 //DEAR VET PLEASE QUOTE THE STRINGS
 // haha no i wont
-let anncId = 5;
-let anncMsg = "Removed ads. They were so fking annoying even for me. -Veteraning";
+let anncId = 6;
+let anncMsg = "Krypton and their community has been bought by Israel ! yayayayay -Vet";
 let anncTitle = "Advertisements";
 
 //notification stuff
