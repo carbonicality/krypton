@@ -6,11 +6,19 @@
 }
 
 body {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+
     font-family: 'Geist';
-    background: #000; background-image:url('https://wallpapercave.com/wp/wp2362841.jpg');
     color: #fff;
+
     height: 100vh;
     overflow: hidden;
+
+    background: 
+        linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+        url('https://wallpapercave.com/wp/wp2362841.jpg') center/cover no-repeat;
 }
 
 .maintainer {
