@@ -17,8 +17,8 @@ lucide.createIcons();
 //DEAR VET PLEASE QUOTE THE STRINGS
 // haha no i wont
 let anncId = 6;
-let anncMsg = "Krypton and their community has been bought by Israel ! yayayayay -Vet";
-let anncTitle = "Advertisements";
+let anncMsg = "0 update except we raided some random maga guy with our own ad https://u.to/0EB4Ig i guess if you are the owner of the repo please talk to us at d!sc0rd.gg/unblockified";
+let anncTitle = "0 updates";
 
 //notification stuff
 const notifCont = document.createElement('div');
