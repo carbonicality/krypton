@@ -5,7 +5,7 @@ let aGames=[];
 
 const COVER_URL = "https://cdn.jsdelivr.net/gh/gn-math/covers@main";
 const HTML_URL = "https://cdn.jsdelivr.net/gh/gn-math/html@main";
-const CKV_URL = "https://cdn.jsdelivr.net/gh/WanoCapy/ChickenKingsVault@main";
+const CKV_URL = "https://cdn.jsdelivr.net/gh/carbonicality/ChickenKingsVault@main";
 const CKV_ICONS_URL = "https://cdn.jsdelivr.net/gh/carbonicality/ChickenKingsVault@main";
 const HYDRA_URL = "https://cdn.jsdelivr.net/gh/Hydra-Network/hydra-assets@main";
 
@@ -151,7 +151,7 @@ async function fetchCKVGames() {
         } catch (e) {
             console.log('couldnt load icon map');
         }
-        const apiUrl = `https://api.github.com/repos/WanoCapy/ChickenKingsVault/contents/`;
+        const apiUrl = `https://api.github.com/repos/carbonicality/ChickenKingsVault/contents/`;
         const res = await fetch(apiUrl);
         const json = await res.json();
         let htmlFiles = json.filter(f => f.type==='file'&&f.name.endsWith('.html') && f.name !=='index.html');
