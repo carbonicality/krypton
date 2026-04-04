@@ -1381,12 +1381,8 @@ async function fetchSuggestions(query) {
         return;
     }
     try {
-        const res = await fetch(
-            `https://corsproxy.io/?url=${encodeURIComponent(`https://suggestqueries.google.com/complete/search?client=firefox&q=${encodeURIComponent(query)}`)}`,
-            { headers: { 'Accept': 'application/json' } }
-        );
+        const res = await fetch(`https://suggestions-pxy.carbonical80.workers.dev/?q=${encodeURIComponent(query)}`);
         const data = await res.json();
-        console.log(data);
         const suggestions = data[1]?.slice(0,8)||[];
         renderSuggs(suggestions,query);
     } catch (e) {
@@ -1415,7 +1411,6 @@ function renderSuggs(suggestions,query) {
         suggContainer.appendChild(item);
     });
     lucide.createIcons();
-    console.log(suggestions.length,suggContainer);
     suggContainer.style.display='block';
 }
 
