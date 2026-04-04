@@ -1382,7 +1382,7 @@ async function fetchSuggestions(query) {
     }
     try {
         const res = await fetch(
-            `https://corsproxy.io/?url=${encodeURIComponent(`https://duckduckgo.com/ac/?q=${encodeURIComponent(query)}&type=list`)}`,
+            `https://corsproxy.io/?url=${encodeURIComponent(`https://suggestqueries.google.com/complete/search?client=firefox&q=${encodeURIComponent(query)}`)}`,
             { headers: { 'Accept': 'application/json' } }
         );
         const data = await res.json();
