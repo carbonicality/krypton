@@ -1511,10 +1511,7 @@ async function fetchWSuggestions(query) {
         return;
     }
     try {
-        const res = await fetch(
-            `https://corsproxy.io/?url=${encodeURIComponent(`https://duckduckgo.com/ac/?q=${encodeURIComponent(query)}&type=list`)}`,
-            { headers: { 'Accept': 'application/json' } }
-        );
+        const res = await fetch(`https://suggestions-pxy.carbonical80.workers.dev/?q=${encodeURIComponent(query)}`);
         const data = await res.json();
         console.log(data);
         const suggestions = data[1]?.slice(0,8)||[];
