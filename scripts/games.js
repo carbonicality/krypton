@@ -5,7 +5,7 @@ let aGames=[];
 
 const COVER_URL = "https://cdn.jsdelivr.net/gh/gn-math/covers@main";
 const HTML_URL = "https://cdn.jsdelivr.net/gh/gn-math/html@main";
-const CKV_URL = "https://cdn.jsdelivr.net/gh/carbonicality/ChickenKingsVault@main";
+const CKV_URL = "https://raw.githubusercontent.com/carbonicality/ChickenKingsVault/main";
 const CKV_ICONS_URL = "https://cdn.jsdelivr.net/gh/carbonicality/ChickenKingsVault@main";
 const HYDRA_URL = "https://cdn.jsdelivr.net/gh/Hydra-Network/hydra-assets@main";
 
@@ -151,7 +151,7 @@ async function fetchCKVGames() {
         } catch (e) {
             console.log('couldnt load icon map');
         }
-        const apiUrl = `https://api.github.com/repos/carbonicality/ChickenKingsVault/contents/`;
+        const apiUrl = `https://api.github.com/repos/carbonicality/ChickenKingsVault/contents/gamefiles/`;
         const res = await fetch(apiUrl);
         const json = await res.json();
         let htmlFiles = json.filter(f => f.type==='file'&&f.name.endsWith('.html') && f.name !=='index.html');
@@ -163,7 +163,7 @@ async function fetchCKVGames() {
             return {
                 name:f.name.replace('.html',''),
                 icon:icon,
-                url:`${CKV_URL}/${f.name}`
+                url:`${CKV_URL}/gamefiles/${f.name}`
             };
         });
         localStorage.setItem('krypton_games_list_ckv',JSON.stringify(games));
