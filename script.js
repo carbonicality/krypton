@@ -1589,7 +1589,7 @@ torBtn.addEventListener('click',async ()=>{
     if (svg) svg.style.color = torEnabled ? '#60a5fa' : '#808080';
     showNotif(
         torEnabled ? 'Tor enabled' : 'Tor disabled',
-        torEnabled ? 'Traffic will now route through Tor. Pages will load slower' : 'Switched back to normal mode.'
+        torEnabled ? 'Traffic will now route through Tor. Pages will load slower. Note than .onion links will not open.' : 'Switched back to normal mode.'
     );
 
 });
