@@ -146,7 +146,7 @@ async function fetchCKVGames() {
             const iconJson = await iconRes.json();
             iconJson.forEach(g => {
                 const key = g.name.toLowerCase().replace(/[^a-z0-9]/g, '');
-                iconMap[key] = `${CKV_ICONS_URL}/${g.img}`;
+                iconMap[key] = `${CKV_ICONS_URL}/gameimages/${g.img}`;
             });
         } catch (e) {
             console.log('couldnt load icon map');
