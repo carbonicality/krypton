@@ -1438,3 +1438,35 @@ svg {
     transition:width linear;
     box-shadow: 0 0 8px rgba(96,165,250,0.4);
 }
+
+.ping-ind {
+    position: fixed;
+    bottom: 12px;
+    left: 12px;
+    background: rgba(15,15,15,0.85);
+    border: 1px solid rgba(96,165,250,0.2);
+    border-radius: 8px;
+    padding: 4px 10px;
+    font-family:'Geist';
+    font-size:11px;
+    color:#60a5fa;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    backdrop-filter:blur(10px);
+    z-index:10000;
+    pointer-events:none;
+    transition:opacity 0.3s ease;
+}
+
+.ping-dot {
+    width:6px;
+    height:6px;
+    border-radius:50%;
+    background:#60a5fa;
+}
+
+.ping-ind.warn .ping-dot {background: #f59e0b;}
+.ping-ind.warn {color:#f59e0b; border-color:rgba(245,158,11,0.2);}
+.ping-ind.bad .ping-dot {background:#ef4444;}
+.ping-ind.bad {color: #ef4444; border-color: rgba(239,68,68,0.2);}

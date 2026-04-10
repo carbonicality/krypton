@@ -1591,5 +1591,31 @@ torBtn.addEventListener('click',async ()=>{
         torEnabled ? 'Tor enabled' : 'Tor disabled',
         torEnabled ? 'Traffic will now route through Tor. Pages will load slower. Note than .onion links will not open.' : 'Switched back to normal mode.'
     );
-
 });
+
+//ping indicator
+const pingEl = document.createElement('div');
+pingEl.className = 'ping-ind';
+pingEl.innerHTML = '<div class="ping-dot"></div><span id="pingVal">--ms</span>';
+document.body.appendChild(pingEl);
+
+async function measurePing() {
+    const wispUrl = localStorage.getItem('krypton_wispUrl')||'wss://wisp.classroom.lat/';
+    const httpUrl = wispUrl.replace('wss://','https://').replace('ws://','http://').replace(/\/$/,'');
+    const start = performance.now();
+    try {
+        await fetch(httpUrl,{method:'HEAD',mode:'no-cors',cache:'no-store'});
+        const ping=Math.round(performance.now()-start);
+        const valEl =document.getElementById('pingVal');
+        valEl.textContent = `${ping}ms`;
+        pingEl.classList.remove('warn','bad');
+        if (ping > 300) pingEl.classList.add('bad');
+        else if (ping > 150) pingEl.classList.add('warn');
+    } catch {
+        document.getElementById('pingVal').textContent='offline';
+        pingEl.classList.add('bad');
+    }
+}
+
+measurePing();
+setInterval(measurePing, 5000);
