@@ -1556,3 +1556,40 @@ searchInput.addEventListener('keydown',(e)=>{
 });
 
 searchInput.addEventListener('blur',()=>setTimeout(hideWSugg,200));
+
+// tor functionality
+let torEnabled = localStorage.getItem('krypton_wispUrl') === 'wss://tor.classroom.lat/';
+const torBtn = document.getElementById('torBtn');
+
+if (torEnabled) {
+    const svg=torBtn.querySelector('svg');
+    if (svg) svg.style.color='#60a5fa';
+}
+
+torBtn.addEventListener('click',async ()=>{
+    torEnabled = !torEnabled;
+    const wispUrl = torEnabled ? 'wss://tor.classroom.lat/' : 'wss://wisp.classroom.lat/';
+    localStorage.setItem('krypton_wispUrl',wispUrl);
+
+    try {
+        const conn = getConnection();
+        const pType = getProxyType();
+        if (pType==='scramjet') {
+            await conn.setTransport('/sail/libcurl/index.mjs',[{
+                websocket: wispUrl,
+                wasm: '/sail/scram/scramjet.wasm.wasm'
+            }]);
+        } else {
+            await conn.setTransport('/epoxy/index.mjs',[{wisp:wispUrl}]);
+        }
+    } catch (e) {
+        console.error('failed to switch transport:',e);
+    }
+    const svg = torBtn.querySelector('svg');
+    if (svg) svg.style.color = torEnabled ? '#60a5fa' : '#808080';
+    showNotif(
+        torEnabled ? 'Tor enabled' : 'Tor disabled',
+        torEnabled ? 'Traffic will now route through Tor. Pages will load slower' : 'Switched back to normal mode.'
+    );
+
+});
