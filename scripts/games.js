@@ -314,6 +314,11 @@ async function openGame(game) {
 
 function closeGame() {
     const frame = document.getElementById('zoneFrame');
+    if (window.saveIDBFS) {
+        window.saveIDBFS().then(()=>{
+            console.log('game saves captured');
+        }).catch(e=>console.warn('save failed',e));
+    }
     frame.remove();
     const nFrame = document.createElement('iframe');
     nFrame.id='zoneFrame';

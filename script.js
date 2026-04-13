@@ -1619,3 +1619,432 @@ async function measurePing() {
 
 measurePing();
 setInterval(measurePing, 5000);
+
+// cloud sync
+const SYNC_API = 'https://classroom.lat/sync/api';
+
+function getSyncToken() {
+    return localStorage.getItem('krypton_syncToken');
+}
+
+function getSyncUser() {
+    return localStorage.getItem('krypton_syncUser');
+}
+
+async function saveIDBFS() {
+    const dbList = await indexedDB.databases();
+    const gameDbs = dbList.filter(db => db.name.includes('/idbfs') || db.name.includes('idbfs'));
+    const result = {};
+    for (const dbInfo of gameDbs) {
+        try {
+            const db = await new Promise((res, rej) => {
+                const req = indexedDB.open(dbInfo.name);
+                req.onsuccess = () => res(req.result);
+                req.onerror = () => rej(req.error);
+            });
+            result[dbInfo.name] = {};
+            for (const storeName of db.objectStoreNames) {
+                const tx = db.transaction(storeName, 'readonly');
+                const store = tx.objectStore(storeName);
+                const data = await new Promise((res, rej) => {
+                    const req = store.getAll();
+                    req.onsuccess = () => res(req.result);
+                    req.onerror = () => rej(req.error);
+                });
+                const keys = await new Promise((res, rej) => {
+                    const req = store.getAllKeys();
+                    req.onsuccess = () => res(req.result);
+                    req.onerror = () => rej(req.error);
+                });
+                result[dbInfo.name][storeName] = keys.map((key, i) => {
+                    let value = data[i];
+                    if (value instanceof ArrayBuffer) {
+                        value = { __type: 'ArrayBuffer', data: btoa(String.fromCharCode(...new Uint8Array(value))) };
+                    } else if (ArrayBuffer.isView(value)) {
+                        value = { __type: 'ArrayBufferView', data: btoa(String.fromCharCode(...new Uint8Array(value.buffer))) };
+                    }
+                    return { key, value };
+                });
+            }
+            db.close();
+        } catch (e) {
+            console.warn(dbInfo.name, e);
+        }
+    }
+    localStorage.setItem('krypton_game_saves', JSON.stringify(result));
+    console.log('game saved via IDBFS');
+}
+//expose
+window.saveIDBFS=saveIDBFS;
+
+async function exportIndexedDB() {
+    const dbList =await indexedDB.databases();
+    const result={};
+    const skipDbs=['/idbfs','idbfs','$scramjet','scramjet'];
+    for (const dbInfo of dbList) {
+        if (skipDbs.some(skip=>dbInfo.name.includes(skip))) continue;
+        try {
+            await new Promise(res=>setTimeout(res,50));
+            const db=await new Promise((res,rej)=>{
+                const req=indexedDB.open(dbInfo.name);
+                req.onsuccess=()=>res(req.result);
+                req.onerror=()=>rej(req.error);
+            });
+            result[dbInfo.name]={};
+            for (const storeName of db.objectStoreNames) {
+                const tx=db.transaction(storeName,'readonly');
+                const store=tx.objectStore(storeName);
+                const data=await new Promise((res,rej)=>{
+                    const req=store.getAll();
+                    req.onsuccess=()=>res(req.result);
+                    req.onerror=()=>rej(req.error);
+                });
+                const keys=await new Promise((res,rej)=>{
+                    const req=store.getAllKeys();
+                    req.onsuccess=()=>res(req.result);
+                    req.onerror=()=>rej(req.error);
+                });
+                result[dbInfo.name][storeName]=keys.map((key,i)=>{
+                    let value=data[i];
+                    if (value instanceof ArrayBuffer) {
+                        value={__type:'ArrayBuffer',data:btoa(String.fromCharCode(...new Uint8Array(value)))};
+                    } else if (ArrayBuffer.isView(value)) {
+                        value={__type:'ArrayBufferView',data:btoa(String.fromCharCode(...new Uint8Array(value.buffer)))};
+                    }
+                    return {key,value};
+                });
+            }
+            db.close();
+            await new Promise(res=>setTimeout(res,50));
+        } catch (e) {
+            console.warn('could not export db',dbInfo.name,e);
+        }
+    }
+    return result;
+}
+
+async function importIndexedDB(data) {
+    for (const [dbName,stores] of Object.entries(data)) {
+        try {
+            const existingDb=await new Promise((res,rej)=>{
+                const req=indexedDB.open(dbName);
+                req.onsuccess=()=>{res(req.result);}
+                req.onerror=()=>rej(req.error);
+            });
+            const version=existingDb.version;
+            const storeNames=[...existingDb.objectStoreNames];
+            existingDb.close();
+            const db = await new Promise((res,rej)=>{
+                const req=indexedDB.open(dbName,version);
+                req.onsuccess=()=>res(req.result);
+                req.onerror=()=>rej(req.error);
+                req.onupgradeneeded=(e)=>{
+                    const db = e.target.result;
+                    for (const storeName of Object.keys(stores)) {
+                        if (!db.objectStoreNames.contains(storeName)) {
+                            db.createObjectStore(storeName);
+                        }
+                    }
+                };
+            });
+            for (const [storeName,entries] of Object.entries(stores)) {
+                if (!db.objectStoreNames.contains(storeName)) continue;
+                try {
+                    const tx = db.transaction(storeName,'readwrite');
+                    const store = tx.objectStore(storeName);
+                    await new Promise((res,rej)=>{
+                        const req=store.clear();
+                        req.onsuccess=()=>res();
+                        req.onerror=()=>rej(req.error);
+                    });
+                    for (const {key,value} of entries) {
+                        store.put(value,key);
+                    }
+                    await new Promise((res,rej)=>{
+                        tx.oncomplete=res;
+                        tx.onerror=()=>rej(tx.error);
+                    });
+                } catch (e) {
+                    console.warn('could not import store:',storeName,e);
+                }
+            }
+            db.close();
+        } catch (e) {
+            console.warn('could not import db',dbName,e);
+        }
+    }
+}
+
+async function restoreGameSaves() {
+    const saved=localStorage.getItem('krypton_game_saves');
+    if (!saved) return;
+    const data=JSON.parse(saved);
+    await importIndexedDB(data);
+    console.log('game saves restored');
+}
+
+async function collectSyncData() {
+    const data = {};
+    for (let i=0;i<localStorage.length;i++) {
+        const key = localStorage.key(i);
+        if (key==='krypton_syncToken' || key==='krypton_syncUser') continue;
+        data[key] = localStorage.getItem(key);
+    }
+    data['__idb__']=await exportIndexedDB();
+    return data;
+}
+
+async function applySyncData(data) {
+    Object.entries(data).forEach(([key,value])=>{
+        if (key==='krypton_syncToken'||key==='krypton_syncUser') return;
+        localStorage.setItem(key,value);
+    });
+    if (data['__idb__']) {
+        await importIndexedDB(data['__idb__']);
+    }
+}
+
+async function pushSync() {
+    const token=getSyncToken();
+    if (!token) return;
+    await new Promise(res=>setTimeout(res,2000));
+    syncBtn.className='sync-btn syncing';
+    syncBtn.innerHTML='<i data-lucide="loader-2"></i><span>Syncing...</span>';
+    lucide.createIcons();
+    try {
+        const res = await fetch(`${SYNC_API}/sync/push`,{
+            method:'POST',
+            headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},
+            body: JSON.stringify({data:await collectSyncData()})
+        });
+        if (!res.ok) throw new Error();
+        localStorage.setItem('krypton_lastSync',Date.now());
+        syncBtn.className = 'sync-btn synced';
+        syncBtn.innerHTML = '<i data-lucide="cloud"></i><span>'+getSyncUser()+'</span>';
+        lucide.createIcons();
+    } catch {
+        syncBtn.className='sync-btn error';
+        syncBtn.innerHTML='<i data-lucide="cloud-off"></i><span>Sync failed</span>';
+        lucide.createIcons();
+        showNotif('Sync failed','Could not reach sync server.');
+    }
+}
+
+async function pullSync() {
+    const token = getSyncToken();
+    if (!token) return;
+    try {
+        const res=await fetch(`${SYNC_API}/sync/pull`, {
+            headers:{'Authorization':`Bearer ${token}`}
+        });
+        const json = await res.json();
+        if (json.data) {
+            await applySyncData(json.data);
+            bookmarks=JSON.parse(localStorage.getItem('krypton_bookmarks')||'[]');
+            history=JSON.parse(localStorage.getItem('krypton_history')||'[]');
+            renderBms();
+            await restoreGameSaves();
+        }
+        return json.updated_at;
+    } catch {
+        showNotif('Sync failed','Failed to pull data from the server.');
+    }
+}
+
+const syncBtn = document.createElement('div');
+syncBtn.className='sync-btn';
+document.body.appendChild(syncBtn);
+
+function updSyncBtn() {
+    const user = getSyncUser();
+    if (user) {
+        syncBtn.className='sync-btn synced';
+        syncBtn.innerHTML=`<i data-lucide="cloud"></i><span>${user}</span>`;
+    } else {
+        syncBtn.className='sync-btn';
+        syncBtn.innerHTML='<i data-lucide="cloud"></i><span>Sign in to cloud sync</span>';
+    }
+    lucide.createIcons();
+}
+updSyncBtn();
+syncBtn.addEventListener('click',openSyncOvr);
+
+const syncOvr = document.createElement('div');
+syncOvr.className='sync-ovr';
+document.body.appendChild(syncOvr);
+
+function openSyncOvr() {
+    syncOvr.style.display='flex';
+    requestAnimationFrame(()=>syncOvr.classList.add('show'));
+    getSyncUser()?renderLoggedIn():renderAuthForm('login');
+}
+
+function closeSyncOvr() {
+    syncOvr.classList.remove('show');
+    setTimeout(()=>{syncOvr.style.display='none';},300);
+}
+
+syncOvr.addEventListener('click',(e)=>{
+    if (e.target===syncOvr) closeSyncOvr();
+});
+
+function renderAuthForm(mode) {
+    const isLogin=mode==='login';
+    syncOvr.innerHTML=`
+    <div class="sync-overlay">
+        <div class="sync-overlay-hdr">
+            <div class="sync-overlay-htop">
+                <div class="sync-overlay-icon"><i data-lucide="cloud"></i></div>
+                <button class="sync-overlay-close" id="syncClose"><i data-lucide="x"></i></button>
+            </div>
+            <h2>${isLogin?'Welcome back':'Create account'}</h2>
+            <p class="sync-overlay-sub">${isLogin ? 'Sign in to sync your data across devices.':'Create a free cloud sync account to sync your data across devices.'}</p>
+        </div>
+        <div style="padding:24px;">
+            <div class="sync-err" id="syncErr"></div>
+            <div class="sync-field-wrap">
+                <input class="sync-field" id="syncUser" type="text" placeholder="Username" autocomplete="off" spellcheck="false">
+                <i data-lucide="user"></i>
+            </div>
+            <div class="sync-field-wrap">
+                <input class="sync-field" id="syncPass" type="password" placeholder="Password">
+                <i data-lucide="lock"></i>
+            </div>
+            <button class="sync-submit" id="syncSubmit">${isLogin?'Sign in':'Create account'}</button>
+            <div class="sync-divider"><span>or</span></div>
+            <div class="sync-toggle">
+                ${isLogin?"Don't have an account? <span class='sync-toggle-link' id='syncSwitch'>Sign up for free</span>":"Already have an account? <span class='sync-toggle-link' id='syncSwitch'>Sign in</span>"}
+            </div>
+        </div>
+    </div>`;
+    lucide.createIcons();
+    document.getElementById('syncClose').addEventListener('click',closeSyncOvr);
+    document.getElementById('syncSwitch').addEventListener('click',()=>renderAuthForm(isLogin?'register':'login'));
+    const submit=document.getElementById('syncSubmit');
+    const errEl = document.getElementById('syncErr');
+    async function doSubmit() {
+        const username=document.getElementById('syncUser').value.trim();
+        const password=document.getElementById('syncPass').value;
+        if (!username||!password) {
+            errEl.innerHTML='<i data-lucide="alert-circle"></i>Please fill in all fields.';
+            lucide.createIcons();
+            return;
+        }
+        submit.textContent='Please wait...';
+        submit.disabled=true;
+        errEl.innerHTML='';
+        try {
+            const res = await fetch(`${SYNC_API}${isLogin?'/login':'/register'}`,{
+                method:'POST',
+                headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({username,password})
+            });
+            const json = await res.json();
+            if (!res.ok) {
+                errEl.innerHTML=`<i data-lucide="alert-circle"></i>${json.error||'Something went wrong.'}`;
+                lucide.createIcons();
+                submit.disabled=false;
+                submit.textContent=isLogin?'Sign in':'Create account';
+                return;
+            }
+            if (isLogin) {
+                localStorage.setItem('krypton_syncToken',json.token);
+                localStorage.setItem('krypton_syncUser',json.username);
+                updSyncBtn();
+                closeSyncOvr();
+                showNotif('Signed in!',`Welcome back, ${json.username}!`);
+                await pullSync();
+                setInterval(pushSync,120000);
+            } else {
+                showNotif('Account created!','You can now sign in.');
+                renderAuthForm('login');
+            }
+        } catch {
+            errEl.innerHTML=`<i data-lucide="alert-circle"></i>Could not reach cloud sync server.`;
+            lucide.createIcons();
+            submit.disabled=false;
+            submit.textContent=isLogin?'Sign in':'Create account';
+        }
+    }
+    submit.addEventListener('click',doSubmit);
+    document.getElementById('syncPass').addEventListener('keypress',(e)=>{
+        if (e.key==='Enter') doSubmit();
+    });
+    setTimeout(()=>document.getElementById('syncUser')?.focus(),100);
+}
+
+function renderLoggedIn() {
+    const user = getSyncUser();
+    const lastSync=localStorage.getItem('krypton_lastSync');
+    const lastSyncStr=lastSync ? new Date(parseInt(lastSync)).toLocaleString(undefined,{month:'short',hour:'2-digit',minute:'2-digit'}):'Never';
+    syncOvr.innerHTML=`
+    <div class="sync-overlay">
+        <div class="sync-overlay-hdr">
+            <div class="sync-overlay-htop">
+                <div class="sync-overlay-icon"><i data-lucide="cloud"></i></div>
+                <button class="sync-overlay-close" id="syncClose"><i data-lucide="x"></i></button>
+            </div>
+            <h2>Cloud sync</h2>
+            <p class="sync-overlay-sub">Your data syncs automatically every 2 minutes.</p>
+        </div>
+        <div style="padding:24px;">
+            <div class="sync-user-card">
+                <div class="sync-avatar">${user[0].toUpperCase()}</div>
+                <div class="sync-user-info">
+                    <h3>${user}</h3>
+                </div>
+            </div>
+            <div class="sync-actions">
+                <button class="sync-action-btn" id="syncPushBtn">
+                    <i data-lucide="upload-cloud"></i>Push - upload now
+                </button>
+                <button class="sync-action-btn" id="syncPullBtn">
+                    <i data-lucide="download-cloud"></i>Pull - restore from cloud
+                </button>
+                <button class="sync-action-btn" id="syncSignOut">
+                    <i data-lucide="log-out"></i>Sign out
+                </button>
+                <button class="sync-action-btn danger" id="syncDelAcct">
+                    <i data-lucide="trash-2"></i>Delete account
+                </button>
+            </div>
+            <div class="sync-last-sync">Last synced: <span>${lastSyncStr}</span></div>
+        </div>
+    </div>`;
+    lucide.createIcons();
+    document.getElementById('syncClose').addEventListener('click',closeSyncOvr);
+    document.getElementById('syncPushBtn').addEventListener('click',async ()=>{
+        closeSyncOvr();
+        await pushSync();
+    });
+    document.getElementById('syncPullBtn').addEventListener('click',async()=>{
+        closeSyncOvr();
+        await pullSync();
+    });
+    document.getElementById('syncSignOut').addEventListener('click',()=>{
+        localStorage.removeItem('krypton_syncToken');
+        localStorage.removeItem('krypton_syncUser');
+        updSyncBtn();
+        closeSyncOvr();
+        showNotif('Signed out','You have been signed out of cloud sync.');
+    });
+    document.getElementById('syncDelAcct').addEventListener('click', async ()=>{
+        if (!confirm('Delete your cloud sync account and saved data? This is irreversible.')) return;
+        try {
+            await fetch(`${SYNC_API}/account`,{
+                method:'DELETE',
+                headers:{'Authorization':`Bearer ${getSyncToken()}`}
+            });
+        } catch {};
+        localStorage.removeItem('krypton_syncToken');
+        localStorage.removeItem('krypton_syncUser');
+        updSyncBtn();
+        closeSyncOvr();
+        showNotif('Account deleted', 'Your account and cloud data has been deleted.');
+    });
+}
+
+if (getSyncToken()) {
+    pullSync().then(()=>pushSync());
+    setInterval(pushSync,120000);
+}
