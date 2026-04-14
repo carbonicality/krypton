@@ -2118,6 +2118,7 @@ svg {
     max-height:100px;
     line-height:1.5;
     scrollbar-width:none;
+    align-self:flex-start;
 }
 
 .ai-input::-webkit-scrollbar {
