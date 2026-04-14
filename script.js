@@ -2048,3 +2048,263 @@ if (getSyncToken()) {
     pullSync().then(()=>pushSync());
     setInterval(pushSync,120000);
 }
+
+//ai
+const WORKER='https://yellow-forest-f6c4.carbonical80.workers.dev/api';
+const MODEL='google/gemini-3-flash-preview';
+
+let aiHistory=[];
+let aiAbortCtr=null;
+let aiAgentRunning=false;
+
+document.getElementById('aiBtn').addEventListener('click',()=>{
+    const sidebar = document.getElementById('aiSidebar');
+    const btn=document.getElementById('aiBtn');
+    sidebar.classList.toggle('open');
+    btn.classList.toggle('active');
+});
+
+document.getElementById('aiSidebarClose').addEventListener('click',()=>{
+    document.getElementById('aiSidebar').classList.remove('open');
+    document.getElementById('aiBtn').classList.remove('active');
+});
+
+function appendAIMsg(text,type) {
+    const msgs=document.getElementById('aiMsgs');
+    const el=document.createElement('div');
+    el.className='ai-msg '+type;
+    if (type==='ai') {
+        el.innerHTML=marked.parse(text);
+    } else {
+        el.textContent=text;
+    }
+    msgs.appendChild(el);
+    msgs.scrollTop=msgs.scrollHeight;
+    return el;
+}
+
+function setAIRunning(running) {
+    aiAgentRunning=running;
+    const btn=document.getElementById('aiSendBtn');
+    if (running) {
+        btn.innerHTML='<i data-lucide="square"></i>';
+        btn.classList.add('running');
+    } else {
+        btn.innerHTML='<i data-lucide="send"></i>';
+        btn.classList.remove('running');
+    }
+    lucide.createIcons();
+}
+
+function stopAIAgent() {
+    if (aiAbortCtr) {
+        aiAbortCtr.abort();
+        aiAbortCtr=null;
+    }
+    const activeTab=document.querySelector('.tab.active');
+    if (activeTab) {
+        const tabId=activeTab.dataset.tabId;
+        const iframe=tabs[tabId]?.iframe;
+        try {
+            if (iframe && iframe.contentWindow?.pageAgent) {
+                iframe.contentWindow.pageAgent.dispose();
+                iframe.contentWindow.pageAgent=null;
+            }
+        } catch (e) {}
+    }
+    document.querySelectorAll('.ai-msg.thinking').forEach(el => el.remove());
+    appendAIMsg('Stopped.','ai');
+    setAIRunning(false);
+}
+
+async function askAI(question,pageContent,pageUrl,history,signal) {
+    const messages=[
+        ...history.map(m=>({role:m.role,content:m.content})),
+        {
+            role:'user',
+            content:(pageUrl?`current page URL: ${pageUrl}\n\npage content:\n${pageContent||''}\n\nuser question:` : '') + question
+        }
+    ];
+    const res=await fetch(WORKER,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({model:MODEL,messages}),
+        signal
+    });
+    const rawText=await res.text();
+    let data;
+    try {
+        data = JSON.parse(rawText);
+    } catch (e) {
+        throw new Error('Invalid response from AI.');
+    }
+    if (data.error) throw new Error(error.data.message);
+    return data.choices?.[0]?.message?.content||'No response.';
+}
+
+function injectPA(frameDoc,frameWin,goal,signal) {
+    return new Promise((resolve,reject)=>{
+        if (signal?.aborted) return reject(new DOMException('Aborted','AbortError'));
+        signal?.addEventListener('abort',()=>{
+            window.removeEventListener('message',msgHandler);
+            try {
+                if (frameWin.pageAgent) {
+                    frameWin.pageAgent.dispose();
+                    frameWin.pageAgent=null;
+                }
+            } catch (e) {}
+            reject(new DOMException('Aborted','AbortError'));
+        });
+        const nukeCode=`(function(){
+            function nuke(){var el=document.getElementById('page-agent-runtime_agent-panel');if(el&&el.parentNode)el.parentNode.removeChild(el);}
+            setInterval(nuke,50);
+            new MutationObserver(nuke).observe(document.documentElement,{childList:true,subtree:true});
+        })();`;
+        const runCode=`
+        window.__runAgent=function(goal) {
+            return new Promise(function(res,rej) {
+                try {
+                    if (window.pageAgent) {
+                        window.pageAgent.dispose();
+                        window.pageAgent=null;
+                    }
+                    var a = new PageAgent({
+                        model:'${MODEL}',
+                        baseURL:'${WORKER}',
+                        apiKey:'dummykey',
+                        language:'en-US',
+                        instructions: {
+                            system: 'You are a browser assistant. Read the current page and complete tasks the user requests. Use get_browser_state to read the page, then use available tools to interact with it.' 
+                        }
+                    });
+                    window.pageAgent=a;
+                    if (a.panel&&a.panel.hide) a.panel.hide();
+                    a.addEventListener('activity',function(e) {
+                        window.parent.postMessage({type:'agent_activity',activity:e.detail},'*');
+                    });
+                    a.execute(goal).then(function(result) {
+                        window.parent.postMessage({type:'agent_done',data:result.data,success:result.success},'*');
+                        res(result);
+                    }).catch(function(err) {
+                        window.parent.postMessage({type:'agent_error',message:err.message},'*');
+                        rej(err);
+                    });
+                } catch (e) {
+                    window.parent.postMessage({type:'agent_error',message:e.message},'*');
+                    rej(e);
+                }
+            });
+        };
+        window.__runAgent(${JSON.stringify(goal)});`;
+
+        function msgHandler(e) {
+            if (e.source!==frameWin) return;
+            if (e.data.type==='agent_done') {
+                window.removeEventListener('message',msgHandler);
+                document.querySelectorAll('.ai-msg.thinking').forEach(el=>el.remove());
+                if (e.data.data?.trim()) appendAIMsg(e.data.data,'ai');
+                else if (!e.data.success) appendAIMsg("The agent could not complete the task.",'ai');
+                resolve();
+            } else if (e.data.type==='agent_error') {
+                window.removeEventListener('message',msgHandler);
+                document.querySelectorAll('.ai-msg.thinking').forEach(el=>el.remove());
+                appendAIMsg('Agent error: '+e.data.message,'ai');
+                reject(new Error(e.data.message));
+            } else if (e.data.type==='agent_activity') {
+                const act = e.data.activity;
+                document.querySelectorAll('.ai-msg.thinking').forEach(el=>el.remove());
+                if (act.type==='thinking') appendAIMsg('Thinking...','thinking');
+                else if(act.type==='executing') appendAIMsg('Running: '+act.tool+'...','thinking');
+            }
+        }
+        window.addEventListener('message',msgHandler);
+        const nukeScript=frameDoc.createElement('script');
+        nukeScript.textContent=nukeCode;
+        frameDoc.head.appendChild(nukeScript);
+        if (frameWin.__agentLoaded) {
+            const s=frameDoc.createElement('script');
+            s.textContent=runCode;
+            frameDoc.head.appendChild(s);
+            return;
+        }
+        const script=frameDoc.createElement('script');
+        script.src='https://cdn.jsdelivr.net/npm/page-agent@1.7.1/dist/iife/page-agent.demo.js';
+        script.crossOrigin='true';
+        script.onload=()=>{
+            frameWin.__agentLoaded=true;
+            const s = frameDoc.createElement('script');
+            s.textContent=runCode;
+            frameDoc.head.appendChild(s);
+        };
+        script.onerror=()=>reject(new Error('failed to load PageAgent'));
+        frameDoc.head.appendChild(script);
+    });
+}
+
+async function sendAIMessage() {
+    if (aiAgentRunning) {
+        stopAIAgent();
+        return;
+    }
+    const input=document.getElementById('aiInput');
+    const text=input.value.trim();
+    if (!text) return;
+    input.value='';
+    input.style.height='auto';
+    appendAIMsg(text,'user');
+    const activeTab=document.querySelector('.tab.active');
+    const tabId=activeTab?.dataset.tabId;
+    const iframe=tabs[tabId]?.iframe;
+    const pageLoaded=iframe&&tabs[tabId]?.url&&tabs[tabId].url!=='krypton://new-tab';
+    setAIRunning(true);
+    aiAbortCtr=new AbortController();
+    const signal=aiAbortCtr.signal;
+    if (pageLoaded) {
+        let frameDoc,frameWin;
+        try {
+            frameDoc=iframe.contentDocument;
+            frameWin=iframe.contentWindow;
+        } catch (e) {frameDoc=null;}
+        if (frameDoc&&frameDoc.body) {
+            const thinking=appendAIMsg('Agent starting...','thinking');
+            try {
+                await injectPA(frameDoc,frameWin,text,signal);
+                thinking.remove();
+                document.querySelectorAll('.ai-msg.thinking').forEach(el=>el.remove());
+            } catch (err) {
+                thinking.remove();
+                document.querySelectorAll('.ai-msg.thinking').forEach(el=>el.remove());
+                if (err.name!=='AbortError') appendAIMsg('Agent error: '+err.message,'ai');
+            }
+            setAIRunning(false);
+            return;
+        }
+    }
+    aiHistory.push({role:'user',content:text});
+    const thinking=appendAIMsg('Thinking...','thinking');
+    try {
+        const reply=await askAI(text,null,null,aiHistory.slice(0,-1),signal);
+        thinking.remove();
+        appendAIMsg(reply,'ai');
+        aiHistory.push({role:'assistant',content:reply});
+    } catch (err) {
+        thinking.remove();
+        aiHistory.pop();
+        if (err.name!=='AbortError') appendAIMsg('Error: '+err.message,'ai');
+    }
+    setAIRunning(false);
+}
+
+document.getElementById('aiSendBtn').addEventListener('click',sendAIMessage);
+
+document.getElementById('aiInput').addEventListener('keydown',(e)=>{
+    if (e.key==='Enter'&&!e.shiftKey) {
+        e.preventDefault();
+        sendAIMessage();
+    }
+});
+
+document.getElementById('aiInput').addEventListener('input',function() {
+    this.style.height='auto';
+    this.style.height=Math.min(this.scrollHeight,100)+'px';
+});

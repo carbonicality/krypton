@@ -8,6 +8,7 @@
         <link rel="stylesheet" href="./styles/styles.css">
         <script src="https://unpkg.com/lucide@latest"></script>
         <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
         <!-- Google tag (gtag.js) -->
         <script async src="https://www.googletagmanager.com/gtag/js?id=G-PFE26JMWNJ"></script>
@@ -60,6 +61,9 @@
                 <button class="nav-btn" id="torBtn" title="Toggle Tor">
                     <i data-lucide="shield"></i>
                 </button>
+                <button class="nav-btn" id="aiBtn" title="Assistant">
+                    <i data-lucide="sparkle"></i>
+                </button>
                 <div class="menu-wpr">
                     <button class="nav-btn" id="menuBtn">
                         <i data-lucide="more-vertical"></i>
@@ -104,80 +108,101 @@
             <div class="progbar-cont" id="progBarCont">
                 <div class="progbar"id="progBar"></div>
             </div>
-
-            <div class="c-area">
-                <div id="particles-js"></div>
-                <div class="loading-ovr" id="loadOvr">
-                    <span class="loader"></span>
-                    <div class="load-txt">Loading...</div>
-                </div>
-                
-                <div class="wscreen-wpr">
-                    <div class="wscreen">
-                        <h1>krypton</h1>
-                        <p class="subtitle">browse without boundaries</p>
-                        <div class="search-box">
-                            <div class="search-in-wpr">
-                                <div class="search-icon">
-                                    <i data-lucide="search"></i>
-                                </div>
-                                <input type="text" class="search-input" placeholder="search here...">
-                                <div class="engine-sel" id="engineSel">
-                                    <button class="engine-btn" id="engineBtn">
-                                        <span id="engineBadge">DuckDuckGo</span>
-                                        <i data-lucide="chevron-up" class="model-chv"></i>
-                                    </button>
-                                    <div class="engine-dr" id="engineDr">
-                                        <div class="engine-opt active" data-engine="https://duckduckgo.com/?q=%s">
-                                            <span class="prov-dot"></span>DuckDuckGo
-                                        </div>
-                                        <div class="engine-opt" data-engine="https://www.google.com/search?q=%s">
-                                            <span class="prov-dot"></span>Google
-                                        </div>
-                                        <div class="engine-opt" data-engine="https://www.bing.com/search?q=%s">
-                                            <span class="prov-dot"></span>Bing
-                                        </div>
-                                        <div class="engine-opt" data-engine="https://search.brave.com/search?q=%s">
-                                            <span class="prov-dot"></span>Brave
+            <div class="c-area-wpr">
+                <div class="c-area">
+                    <div id="particles-js"></div>
+                    <div class="loading-ovr" id="loadOvr">
+                        <span class="loader"></span>
+                        <div class="load-txt">Loading...</div>
+                    </div>
+                    
+                    <div class="wscreen-wpr">
+                        <div class="wscreen">
+                            <h1>krypton</h1>
+                            <p class="subtitle">browse without boundaries</p>
+                            <div class="search-box">
+                                <div class="search-in-wpr">
+                                    <div class="search-icon">
+                                        <i data-lucide="search"></i>
+                                    </div>
+                                    <input type="text" class="search-input" placeholder="search here...">
+                                    <div class="engine-sel" id="engineSel">
+                                        <button class="engine-btn" id="engineBtn">
+                                            <span id="engineBadge">DuckDuckGo</span>
+                                            <i data-lucide="chevron-up" class="model-chv"></i>
+                                        </button>
+                                        <div class="engine-dr" id="engineDr">
+                                            <div class="engine-opt active" data-engine="https://duckduckgo.com/?q=%s">
+                                                <span class="prov-dot"></span>DuckDuckGo
+                                            </div>
+                                            <div class="engine-opt" data-engine="https://www.google.com/search?q=%s">
+                                                <span class="prov-dot"></span>Google
+                                            </div>
+                                            <div class="engine-opt" data-engine="https://www.bing.com/search?q=%s">
+                                                <span class="prov-dot"></span>Bing
+                                            </div>
+                                            <div class="engine-opt" data-engine="https://search.brave.com/search?q=%s">
+                                                <span class="prov-dot"></span>Brave
+                                            </div>
                                         </div>
                                     </div>
+                                    <button class="search-send-btn" id="searchSendBtn">
+                                        <i data-lucide="arrow-right"></i>
+                                    </button>
                                 </div>
-                                <button class="search-send-btn" id="searchSendBtn">
-                                    <i data-lucide="arrow-right"></i>
-                                </button>
+                            </div>
+                            <div class="shortcuts">
+                                <div class="shortcut">
+                                    <div class="s-icon">
+                                        <i data-lucide="gamepad-2"></i>
+                                    </div>
+                                    <div class="s-title">games</div>
+                                </div>
+                                <div class="shortcut">
+                                    <div class="s-icon">
+                                        <i data-lucide="layout-grid"></i>
+                                    </div>
+                                    <div class="s-title">apps</div>
+                                </div>
+                                <div class="shortcut">
+                                    <div class="s-icon">
+                                        <i data-lucide="message-circle"></i>
+                                    </div>
+                                    <div class="s-title">ai</div>
+                                </div>
+                                <div class="shortcut">
+                                    <div class="s-icon">
+                                        <i data-lucide="video"></i>
+                                    </div>
+                                    <div class="s-title">movies</div>
+                                </div>
+                                <div class="shortcut">
+                                    <div class="s-icon">
+                                        <i data-lucide="music"></i>
+                                    </div>
+                                    <div class="s-title">music</div>
+                                </div>
                             </div>
                         </div>
-                        <div class="shortcuts">
-                            <div class="shortcut">
-                                <div class="s-icon">
-                                    <i data-lucide="gamepad-2"></i>
-                                </div>
-                                <div class="s-title">games</div>
-                            </div>
-                            <div class="shortcut">
-                                <div class="s-icon">
-                                    <i data-lucide="layout-grid"></i>
-                                </div>
-                                <div class="s-title">apps</div>
-                            </div>
-                            <div class="shortcut">
-                                <div class="s-icon">
-                                    <i data-lucide="message-circle"></i>
-                                </div>
-                                <div class="s-title">ai</div>
-                            </div>
-                            <div class="shortcut">
-                                <div class="s-icon">
-                                    <i data-lucide="video"></i>
-                                </div>
-                                <div class="s-title">movies</div>
-                            </div>
-                            <div class="shortcut">
-                                <div class="s-icon">
-                                    <i data-lucide="music"></i>
-                                </div>
-                                <div class="s-title">music</div>
-                            </div>
+                    </div>
+                </div>
+                <div class="ai-sidebar" id="aiSidebar">
+                    <div class="ai-sidebar-hdr">
+                        <div class="ai-sidebar-title">
+                            <div class="ai-sidebar-icon"><i data-lucide="sparkle"></i></div>
+                            <span>assistant</span>
+                        </div>
+                        <button class="ai-sidebar-close" id="aiSidebarClose">
+                            <i data-lucide="x"></i>
+                        </button>
+                    </div>
+                    <div class="ai-msgs" id="aiMsgs"></div>
+                    <div class="ai-sidebar-inputarea">
+                        <div class="ai-input-wpr">
+                            <textarea class="ai-input" id="aiInput" placeholder="Ask anything to AI..." rows="1"></textarea>
+                            <button class="ai-send-btn" id="aiSendBtn">
+                                <i data-lucide="send"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
