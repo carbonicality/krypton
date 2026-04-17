@@ -1,4 +1,6 @@
 import * as BareMux from "/sail/baremux/index.mjs";
+import amethyst from './amethyst.js';
+
 let connection=null;
 function getConnection() {
     if (!connection) {
@@ -869,6 +871,13 @@ async function loadWebsite(url) {
 
 updLIC('krypton://new-tab');
 
+await amethyst.init({
+    tabs,
+    loadWebsite,
+    showNotif,
+    getActiveTabId:()=>document.querySelector('.tab.active')?.dataset.tabId,
+});
+
 function monitorLoad(iframe,tabId) {
     const loadOvr = document.getElementById('loadOvr');
     const progBar = document.getElementById('progBar');
@@ -1677,10 +1686,19 @@ async function saveIDBFS() {
 //expose
 window.saveIDBFS=saveIDBFS;
 
+function ab2b64(buffer) {
+    const bytes=new Uint8Array(buffer);
+    let bin='';
+    for (let i=0;i<bytes.length;i+=8192) {
+        bin+=String.fromCharCode(...bytes.subarray(i,i+8192));
+    }
+    return btoa(bin);
+}
+
 async function exportIndexedDB() {
     const dbList =await indexedDB.databases();
     const result={};
-    const skipDbs=['/idbfs','idbfs','$scramjet','scramjet'];
+    const skipDbs=['/idbfs','idbfs','$scramjet','scramjet','amethyst_extensions'];
     for (const dbInfo of dbList) {
         if (skipDbs.some(skip=>dbInfo.name.includes(skip))) continue;
         try {
@@ -1707,9 +1725,9 @@ async function exportIndexedDB() {
                 result[dbInfo.name][storeName]=keys.map((key,i)=>{
                     let value=data[i];
                     if (value instanceof ArrayBuffer) {
-                        value={__type:'ArrayBuffer',data:btoa(String.fromCharCode(...new Uint8Array(value)))};
+                        value={__type:'ArrayBuffer',data:ab2b64(value)};
                     } else if (ArrayBuffer.isView(value)) {
-                        value={__type:'ArrayBufferView',data:btoa(String.fromCharCode(...new Uint8Array(value.buffer)))};
+                        value={__type:'ArrayBufferView',data:ab2b64(value)};
                     }
                     return {key,value};
                 });
