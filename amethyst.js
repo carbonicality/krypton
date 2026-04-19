@@ -260,19 +260,18 @@ function getBackgroundInfo(manifest) {
 
 function matchPattern(pattern,url) {
     if (pattern==='<all_urls>') return true;
-    if (pattern==='*://*/*') return url.startsWith('http://')||url.startsWith('https://');
     try {
-        const escaped=pattern
-            .replace(/[.+^${}()|[\]\\]/g, '\\$&')
-            .replace(/\\\*/g, '.*')
-            .replace(/\?/g, '.');
-        const schemeMatch=escaped.match(/^([^:]+):\/\//);
-        if (!schemeMatch) return false;
-        const re=new RegExp('^'+escaped+'$');
-        return re.test(url);
-    } catch (e) {
-        return false;
-    }
+        const u=new URL(url);
+        const [scheme,rest]=pattern.split('://');
+        if (scheme!=='*'&&scheme!==u.protocol.replace(':','')) return false;
+        const slashIdx=rest.indexOf('/');
+        const host=slashIdx===-1?rest:rest.slice(0,slashIdx);
+        const path=slashIdx===-1?'/*':rest.slice(slashIdx);
+        const hostRe=new RegExp('^'+host.replace(/\*/g,'[^.]*')+'$');
+        if (!hostRe.test(u.hostname)) return false;
+        const pathRe=new RegExp('^'+path.replace(/[.+^${}()|[\]\\]/g,'\\$&').replace(/\*/g,'.*')+'$');
+        return pathRe.test(u.pathname+u.search);
+    } catch (e) {return false;}
 }
 
 /*
@@ -282,8 +281,9 @@ function matchPattern(pattern,url) {
 
 function buildChromeShim(extId,tabId,isBackground) {
     return `(function() {
-    if (window.__amethyst_shim_loaded) return;
-    window.__amethyst_shim_loaded=true;
+    const __win=typeof window!=='undefined'?window:self;
+    if (__win.__amethyst_shim_loaded) return;
+    __win.__amethyst_shim_loaded=true;
 
     const __extId=${JSON.stringify(extId)};
     const __tabId=${JSON.stringify(tabId)};
@@ -298,10 +298,10 @@ function buildChromeShim(extId,tabId,isBackground) {
         const msgId=++__msgIdCounter;
         const msg={__amethyst:true,type,extId:__extId,tabId:__tabId,msgId,payload};
         if (callback) __pendingCallbacks[msgId]=callback;
-        window.parent!==window?window.parent.postMessage(msg,'*'):window.postMessage(msg,'*');
+        __win.parent!==__win?__win.parent.postMessage(msg,'*'):__win.postMessage(msg,'*');
     }
     
-    window.addEventListener('message',(e)=>{
+    __win.addEventListener('message',(e)=>{
         const d=e.data;
         if (!d||!d.__amethyst_reply) return;
         if (d.extId!==__extId) return;
@@ -379,12 +379,16 @@ function buildChromeShim(extId,tabId,isBackground) {
     
     //chrome.storage
     function __mkStorageArea(area) {
+        function __sendP(type,payload,cb) {
+            if (cb) {__send(type,payload,cb);return undefined;}
+            return new Promise((res,rej)=>__send(type,payload,(r,err)=>err?rej(err):res(r)));
+        }
         return {
-            get:(keys,cb)=>__send('storage.get',{area,keys},cb),
-            set:(items,cb)=>__send('storage.set',{area,items},(r)=>cb&&cb()),
-            remove:(keys,cb)=>__send('storage.remove',{area,keys},(r)=>cb&&cb()),
-            clear:(cb)=>__send('storage.clear',{area},(r)=>cb&&cb()),
-            getBytesInUse: (keys,cb)=>cb&&cb(0),
+            get:(keys,cb)=>__sendP('storage.get',{area,keys},cb),
+            set:(items,cb)=>__sendP('storage.set',{area,items},cb),
+            remove:(keys,cb)=>__sendP('storage.remove',{area,keys},cb),
+            clear:(cb)=>__sendP('storage.clear',{area},cb),
+            getBytesInUse:(keys,cb)=>cb?cb(0):Promise.resolve(0),
         };
     }
     const storage={
@@ -457,9 +461,9 @@ function buildChromeShim(extId,tabId,isBackground) {
             __send('i18n.getMessage',{messageName,substitutions},r=>result=r);
             return result||messageName;
         },
-        getUILanguage:()=>navigator.language||'en',
+        getUILanguage:()=>(typeof navigator!=='undefined'?navigator.language:null)||'en',
         detectLanguage:(text,cb)=>cb&&cb({isReliable:false,languages:[]}),
-        getAcceptLanguage:(cb)=>cb&&cb([navigator.language||'en']),
+        getAcceptLanguage:(cb)=>cb&&cb([(typeof navigator!=='undefined'?navigator.language:null)||'en']),
     };
 
     //chrome.contextMenus
@@ -661,7 +665,7 @@ function buildChromeShim(extId,tabId,isBackground) {
         cpu:{getInfo:(cb)=>cb&&cb({numOfProcessors:4,'arch-name':'x86-64',modelName:'Amethyst vCPU',features:[]})},
         memory:{getInfo:(cb)=>cb&&cb({capacity:8*1024*1024*1024,availableCapacity:4*1024*1024*1024})},
         storage:{getInfo:(cb)=>cb&&cb([])},
-        display:{getInfo:(cb)=>cb&&cb([{id:'0',isPrimary:true,isInternal:false,isEnabled:true,bounds:{left:0,top:0,width:screen.width,height:screen.height}}])},
+        display:{getInfo:(cb)=>cb&&cb([{id:'0',isPrimary:true,isInternal:false,isEnabled:true,bounds:{left:0,top:0,width:typeof screen!=='undefined'?screen.width:1920,height:typeof screen!=='undefined'?screen.height:1080}}])},
     };
 
     //chrome.power
@@ -694,19 +698,22 @@ function buildChromeShim(extId,tabId,isBackground) {
     };
 
     //chrome.tts
+    const __ss=typeof speechSynthesis!=='undefined'?speechSynthesis:null;
     const tts={
         speak:(utterance,options,cb)=>{
-            const u=new SpeechSynthesisUtterance(utterance);
-            if (options?.lang) u.lang=options.lang;
-            if (options?.rate) u.rate=options.rate;
-            if (options?.pitch) u.pitch=options.pitch;
-            if (options?.volume) u.volume=options.volume;
-            speechSynthesis.speak(u);
+            if (__ss){
+                const u=new SpeechSynthesisUtterance(utterance);
+                if (options?.lang)u.lang=options.lang;
+                if (options?.rate)u.rate=options.rate;
+                if (options?.pitch)u.pitch=options.pitch;
+                if (options?.volume)u.volume=options.volume;
+                __ss.speak(u);
+            }
             cb&&cb();
         },
-        stop:()=>speechSynthesis.cancel(),
-        isSpeaking:(cb)=>cb&&cb(speechSynthesis.speaking),
-        getVoices:(cb)=>cb&&cb(speechSynthesis.getVoices().map(v=>({voiceName:v.name,lang:v.lang,remote:false,extensionId:''}))),
+        stop:()=>__ss&&__ss.cancel(),
+        isSpeaking:(cb)=>cb&&cb(__ss?__ss.speaking:false),
+        getVoices:(cb)=>cb&&cb(__ss?__ss.getVoices().map(v=>({voiceName:v.name,lang:v.lang,remote:false,extensionId:''})):[]),
         onEvent:__mkEvent(),
     };
 
@@ -723,8 +730,21 @@ function buildChromeShim(extId,tabId,isBackground) {
         onFontChanged:__mkEvent(),
     };
 
+    //pipe
+    __win.addEventListener('message',(e)=>{
+        const d=e.data;
+        if (!d||!d.__amethyst_reply||d.extId!==__extId) return;
+        if (d.event==='runtime.onMessage'&&d.args) {
+            const [message,sender]=d.args;
+            const sendResponse=(resp)=>{
+                __win.parent!==win?__win.parent.postMessage({__amethyst:true,type:'runtime.sendResponse',extId:__extId,tabId:__tabId,msgId:d.msgId,payload:{response:resp}},'*'):null;
+            };
+            runtime.onMessage._fire(message,sender,sendResponse);
+        }
+    });
+
     //build chrome obj
-    window.chrome={
+    __win.chrome={
         runtime,storage,tabs,windows,extension,i18n,contextMenus,notifications,cookies,webRequest,declarativeNetRequest,scripting,action,browserAction,pageAction,alarms,permissions,history,bookmarks,downloads,identity,commands,omnibox,contentSettings,proxy,system,power,management,webNavigation,tts,clipboard,fontSettings,
         app: {
             getDetails:()=>null,
@@ -736,13 +756,59 @@ function buildChromeShim(extId,tabId,isBackground) {
         loadTimes:()=>({}),
     };
 
-    if (!window.browser) {
-        window.browser=window.chrome;
+    const __origFetch=self.fetch;
+    self.fetch=function(input,...args) {
+        const url=typeof input==='string'?input:input?.url||'';
+        if (url.startsWith('amethyst-ext://')){
+            return new Promise((res,rej)=>{
+                __send('fetch.extResource',{url},async (result)=>{
+                    if (!result) {rej(new Error('not found'));return;}
+                    const bytes=atob(result.data);
+                    const arr=new Uint8Array(bytes.length);
+                    for (let i=0;i<bytes.length;i++) arr[i]=bytes.charCodeAt(i);
+                    res(new Response(arr.buffer,{status:200,headers:{'Content-Type':result.mime}}));
+                });
+            });
+        }
+        return __origFetch.call(self,input,...args);
+    };
+
+    if (typeof XMLHttpRequest!=='undefined') {
+        const __origXHROpen=XMLHttpRequest.prototype.open;
+        XMLHttpRequest.prototype.open=function(method,url,...rest) {
+            if (typeof url==='string'&&url.startsWith('amethyst-ext://')) {
+                this.__amethystExtUrl=url;
+            }
+            return __origXHROpen.call(this,method,url,...rest);
+        };
+        const __origXHRSend=XMLHttpRequest.prototype.send;
+        XMLHttpRequest.prototype.send=function(body) {
+            if (this.__amethystExtUrl) {
+                const xhr=this;
+                __send('fetch.extResource',{url:this.__amethystExtUrl},(result)=>{
+                    if (!result) {
+                        Object.defineProperty(xhr,'status',{value:404});
+                        xhr.dispatchEvent(new Event('error'));
+                        return;
+                    }
+                    const bytes=atob(result.data);
+                    const arr=new Uint8Array(bytes.length);
+                    for (let i=0;i<bytes.length;i++) arr[i]=bytes.charCodeAt(i);
+                    Object.defineProperty(xhr,'status',{value:200});
+                    Object.defineProperty(xhr,'response',{value:arr.buffer});
+                    Object.defineProperty(xhr,'responseText',{value:new TextDecoder().decode(arr)});
+                    xhr.dispatchEvent(new Event('load'));
+                });
+                return;
+            }
+            return __origXHRSend.call(this,body);
+        };
     }
 
-    if (typeof self !== 'undefined' && self !== window) {
-        self.chrome=window.chrome;
-        self.browser=window.chrome;
+    __win.browser=__win.chrome;
+    if (typeof self !== 'undefined' && self !== __win) {
+        self.chrome=__win.chrome;
+        self.browser=__win.chrome;
     }
     })();`;
 }
@@ -838,16 +904,30 @@ async function handleShimMessage(event) {
         case 'runtime.sendMessage': {
             const {targetExt,message}=payload;
             const target=_extensions[targetExt||extId];
-            if (!target?.bgFrame) {reply(null);break;}
-            const bgWin=target.bgFrame.contentWindow;
-            if (!bgWin) {reply(null);break;}
-            try {
-                bgWin.postMessage({
-                    __amethyst_reply:true,extId:targetExt||extId,
-                    tabId,msgId:null,event:'runtime.onMessage',
-                    args:[message,{tab:_buildTabObj(tabId),id:extId},(resp)=>reply(resp)]
-                },'*');
-            } catch (e) {reply(null);}
+            if (!target?.bgFrame&&!target?.bgWorker) {reply(null);break;}
+
+            const sender={
+                tab:_buildTabObj(tabId),
+                id:extId,
+                frameId:0,
+                url:_tabs?.[tabId]?.url||''
+            };
+
+            const msg={
+                __amethyst_reply:true,
+                extId:targetExt||extId,
+                tabId,
+                msgId:null,
+                event:'runtime.onMessage',
+                args:[message,sender,(resp)=>reply(resp)]
+            };
+            if (target.bgWorker) {
+                try {target.bgWorker.postMessage(msg);} catch (e) {reply(null);}
+            } else if (target.bgFrame?.contentWindow) {
+                try {target.bgFrame.contentWindow.postMessage(msg,'*');} catch (e) {reply(null);}
+            } else {
+                reply(null);
+            }
             break;
         }
         case 'runtime.openOptionsPage': {
@@ -1236,6 +1316,22 @@ async function handleShimMessage(event) {
             break;
         }
 
+        case 'fetch.extResource': {
+            const url=payload.url;
+            const match=url.match(/^amethyst-ext:\/\/([^/]+)\/(.+)$/);
+            if (!match) {reply(null);break;}
+            const [,resourceExtId,path]=match;
+            const ab=await readExtFile(resourceExtId,path);
+            if (!ab) {reply(null);break;}
+            const bytes=new Uint8Array(ab);
+            let bin='';
+            for (let i=0;i<bytes.length;i+=8192) {
+                bin+=String.fromCharCode(...bytes.subarray(i,i+8192));
+            }
+            reply({data:btoa(bin),mime:guessMime(path)});
+            break;
+        }
+
         //commands
         case 'commands.getAll': {
             const cmds=_extensions[extId]?.manifest?.commands||{};
@@ -1336,7 +1432,10 @@ async function startBackground(extId) {
         let scriptTags='';
         for (const scriptPath of bgInfo.scripts) {
             const code=await readExtFileText(extId,scriptPath);
-            if (code) scriptTags+=`<script>${await wrapExtScript(extId,code)}<\/script>\n`;
+            if (code) {
+                const safeCode=(await wrapExtScript(extId,code)).replace(/<\/script>/gi,'<\\/script>');
+                scriptTags+=`<script>${safeCode}<\/script>\n`;
+            }
         }
         const html=`<!DOCTYPE html><html><head>
         <script>${shimCode}</script>
@@ -1358,6 +1457,10 @@ async function startBackground(extId) {
             worker.addEventListener('message',(e)=>{
                 handleShimMessage({data:e.data,source:{postMessage:(msg)=>worker.postMessage(msg)}});
             });
+            setTimeout(()=>{
+                ext.bgWorker?.postMessage({__amethyst_reply:true,extId,tabId:null,msgId:null,event:'runtime.onInstalled',args:[{reason:'install'}]});
+                ext.bgWorker?.postMessage({__amethyst_reply:true,extId,tabId:null,msgId:null,event:'runtime.onStartup',args:[]});
+            },100);
         } catch (e) {
             console.warn('[amethyst] worker start failed, falling back to iframe: ',e);
         }
@@ -1374,22 +1477,28 @@ async function startBackground(extId) {
 function fireEvent2Ext(extId,eventName,args) {
     const ext=_extensions[extId];
     if (!ext) return;
-    const target =ext.bgFrame?.contentWindow||null;
-    if (!target) return;
-    try {
-        target.postMessage({
-            __amethyst_reply:true,extId,tabId:null,msgId:null,
-            event:eventName,args
-        },'*');
-    } catch (e) {}
+    const msg={__amethyst_reply:true,extId,tabId:null,msgId:null,event:eventName,args};
+    if (ext.bgWorker) {
+        try {ext.bgWorker.postMessage(msg);} catch (e) {}
+    } else if (ext.bgFrame?.contentWindow) {
+        try {ext.bgFrame.contentWindow.postMessage(msg,'*');} catch (e) {}
+    }
 }
 
 //content script injector
 export async function injectContentScripts(iframe,tabId,url) {
     if (!url||url==='krypton://new-tab') return;
     const shimCode={};
-    const matching=_contentScriptReg.filter(cs=>urlMatchesPatterns(url,cs.matches));
+    const matching=_contentScriptReg.filter(cs=>cs.matches.some(p=>matchPattern(p,url)));
     if (!matching.length) return;
+    console.log('[amethyst] url: ',url,'registered: ',_contentScriptReg.length,'matched: ',matching.length);
+    await new Promise(res=>{
+        if (iframe.contentDocument?.readyState==='complete'||iframe.contentDocument?.readyState==='interactive') {
+            res();
+        } else {
+            iframe.addEventListener('load',res,{once:true});
+        }
+    });
     const byRunAt={document_start:[],document_end:[],document_idle:[]};
     for (const cs of matching) {
         const runAt=cs.runAt||'document_idle';
@@ -1402,6 +1511,19 @@ export async function injectContentScripts(iframe,tabId,url) {
             }
             injectScript(iframe,shimCode[cs.extId],cs.extId);
             if (!_tabMsgListeners[tabId]) _tabMsgListeners[tabId]=[];
+            const extId=cs.extId;
+            _tabMsgListeners[tabId].push((message,sender,sendResponse)=>{
+                try {
+                    iframe.contentWindow?.postMessage({
+                        __amethyst_reply:true,
+                        extId,
+                        tabId,
+                        msgId:null,
+                        event:'runtime.onMessage',
+                        args:[message.sender,(resp)=>sendResponse(resp)]
+                    },'*');
+                } catch (e) {}
+            });
             if (cs.css?.length) {
                 for (const cssFile of cs.css) {
                     const css=await readExtFileText(cs.extId,cssFile);
@@ -1451,7 +1573,8 @@ async function rewriteExtHtml(extId,html) {
         const path=m[1].replace(/^\//,'');
         const code=await readExtFileText(extId, path);
         if (code) {
-            result = result.replace(m[0],`<script>${code}<\/script>`);
+            const safeCode=code.replace(/<\/script>/gi,'<\\/script>');
+            result=result.replace(m[0],`<script>${safeCode}<\/script>`);
         }
     }
     const cssMatches=[...result.matchAll(cssRe)];
@@ -2223,7 +2346,7 @@ const amethyst={
     injectContextMenu,
     openExtPopup,
     closeExtPopup,
-    getInstalledExts,
+    getInstalledExts,   
     checkDNR,
 };
 

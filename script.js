@@ -820,6 +820,10 @@ async function loadWebsite(url) {
         tabs[tabId].iframe.src = src;
         tabs[tabId].url = fixedurl;
         monitorLoad(tabs[tabId].iframe,tabId);
+        tabs[tabId].iframe.addEventListener('load',()=>{
+            amethyst.injectContentScripts(tabs[tabId].iframe,tabId,fixedurl);
+            amethyst.injectContextMenu(tabs[tabId].iframe,tabId,fixedurl);
+        },{once:true});
     } else {
         const iframe = document.createElement('iframe');
         iframe.className = 'bframe';
@@ -827,6 +831,22 @@ async function loadWebsite(url) {
         iframe.dataset.tabId = tabId;
         cArea.appendChild(iframe);
         setupIntercept(iframe,tabId);
+        iframe.addEventListener('load',()=>{
+            let currentUrl=tabs[tabId]?.url;
+            try {
+                const iframeSrc=iframe.contentWindow.location.href;
+                const proxyType=getProxyType();
+                if (proxyType==='scramjet'&&iframeSrc.includes('/sail/go')) {
+                    currentUrl=scramjet.decodeUrl(iframeSrc);
+                } else if (proxyType==='uv'&&iframeSrc.includes(__uv$config.prefix)) {
+                    currentUrl=__uv$config.decodeUrl(iframeSrc.split(__uv$config.prefix)[1]);
+                }
+            } catch (e) {}
+            if (currentUrl&&!currentUrl.startsWith('krypton://')) {
+                amethyst.injectContentScripts(iframe,tabId,currentUrl);
+                amethyst.injectContextMenu(iframe,tabId,currentUrl);
+            }
+        });
         tabs[tabId] = {
             url: fixedurl,
             title: url,
