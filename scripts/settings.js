@@ -56,16 +56,20 @@ if (clearBtn) {
 function initTgls() {
     const tgls = {
         tglParticles: 'krypton_particles',
-        tglAnims: 'krypton_anims'
+        tglAnims: 'krypton_anims',
+        tglAds: 'krypton_ads'
     };
     Object.entries(tgls).forEach(([id,key])=>{
         const el = document.getElementById(id);
         if (!el) return;
-        if (localStorage.getItem(key)!=='false') el.classList.add('active');
+        const currentValue=localStorage.getItem(key);
+        const isEnabled=(key==='krypton_ads')?(currentValue!=='false'):(currentValue==='true');
+        el.classList.remove('active');
+        if (isEnabled) el.classList.add('active');
         el.addEventListener('click',()=>{
             el.classList.toggle('active');
-            localStorage.setItem(key,el.classList.contains('active'));
-            alert('This window will refresh to apply changes.')
+            localStorage.setItem(key,el.classList.contains('active')?'true':'false');
+            alert('This window will reload to apply changes.');
             window.parent.location.reload();
         });
     });

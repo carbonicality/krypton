@@ -18,8 +18,8 @@ lucide.createIcons();
 //MAKE SURE YOU CHANGE THESE. ANNOUNCEMENT VARS
 //DEAR VET PLEASE QUOTE THE STRINGS
 // haha no i wont
-let anncId = 6;
-let anncMsg = "08/04/26 Carbon left krypton, im now owner. Pretty sad ICL, i will still manage everything and hope i can still mantain this project alive. I will recruit more devs for sure. Bye :) -Vet";
+let anncId = 7;
+let anncMsg = "Hey, we had to add popunder ads. I'm really sorry about this but we need funding to keep krypton running, and we hate ads just as much as you do. You can turn off ads in settings.";
 let anncTitle = "New ownership!";
 
 //notification stuff

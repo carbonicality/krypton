@@ -21,7 +21,11 @@
         </script>
 
         <!--monetag popunders-->
-        <script>(function(s){s.dataset.zone='10907374',s.src='https://al5sm.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+        <script>
+            if (localStorage.getItem('krypton_ads')!=='false') {
+                (function(s){s.dataset.zone='10907374',s.src='https://al5sm.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')));
+            }
+        </script>
     </head>
     <body>
         <div class="maintainer">
