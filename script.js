@@ -21,7 +21,7 @@ lucide.createIcons();
 let anncId = 7;
 let anncMsg = "Hey, we had to add popunder ads. I'm really sorry about this but we need funding to keep krypton running, and we hate ads just as much as you do. You can turn off ads in settings > privacy.";
 let anncTitle = "Advertisement notice";
-
+ 
 //notification stuff
 const notifCont = document.createElement('div');
 notifCont.className = 'notif-cont';
