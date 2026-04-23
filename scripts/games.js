@@ -5,12 +5,13 @@ let aGames=[];
 
 const COVER_URL = "https://cdn.jsdelivr.net/gh/gn-math/covers@main";
 const HTML_URL = "https://cdn.jsdelivr.net/gh/gn-math/html@main";
-const CKV_URL = "https://raw.githubusercontent.com/carbonicality/ChickenKingsVault/main";
+const CKV_URL = "https://raw.githack.com/carbonicality/ChickenKingsVault/main";
 const CKV_ICONS_URL = "https://cdn.jsdelivr.net/gh/carbonicality/ChickenKingsVault@main";
 const HYDRA_URL = "https://cdn.jsdelivr.net/gh/Hydra-Network/hydra-assets@main";
 
 let currProvider = localStorage.getItem('krypton_provider') || 'ckv';
 let cardObserver = null;
+let luminReady = false;
 
 console.log('sw controlled:',!!navigator.serviceWorker.controller);
 if (navigator.serviceWorker.controller) {
@@ -19,63 +20,53 @@ if (navigator.serviceWorker.controller) {
 
 async function fetchGames() {
     try {
-        let zonesUrl = "https://cdn.jsdelivr.net/gh/gn-math/assets@main/zones.json";
-        try {
-            const sharesponse = await fetch("https://api.github.com/repos/gn-math/assets/commits?t="+Date.now());
-            if (sharesponse && sharesponse.status===200) {
-                const shajson=await sharesponse.json();
-                const sha=shajson[0]['sha'];
-                if (sha) {
-                    zonesUrl =`https://cdn.jsdelivr.net/gh/gn-math/assets@${sha}/zones.json`;
-                }
-            }
-        } catch (error) {
-            console.log('using default zones');
-        }
-        const res = await fetch(zonesUrl+"?t="+Date.now());
-        const gnMathZones = await res.json();
-        games = gnMathZones
-            .filter(zone => zone.id !== -1 && zone.id !== 1 && zone.id !== 64)
-
-            .map(zone => {
-                let url = zone.url.replace("{HTML_URL}",HTML_URL).replace("{COVER_URL}",COVER_URL);
-                if (zone.id===0) {
-                    url = "https://cdn.jsdelivr.net/gh/bubbls/youtube-playables@main/bowmasters/index.html";
-                }
-                return {
-                    name:zone.name,
-                    icon:zone.cover.replace("{COVER_URL}",COVER_URL).replace("{HTML_URL}",HTML_URL),
-                    url: url
-                }
+        if (!luminReady) {
+            await Lumin.init({
+                headless:true,
+                onReady:()=>console.log('lumin ready'),
+                onError:(err)=>console.log('lumin error',err),
             });
+        }
+        const result=await Lumin.getGames({limit:999});
+        const imgUrls=await Promise.all(
+            result.games.map(g=>Lumin.getImageUrl(g.image_token))
+        );
+        games=result.games.map((g,i)=>({
+            name:g.name,
+            icon:'',
+            url:g.id,
+            image_token:g.image_token,
+        }));
         localStorage.setItem('krypton_games_list',JSON.stringify(games));
-        if (!navigator.onLine) {
-            checkGames().then(cachedUrls => {
-                fGames = games.filter(game => cachedUrls.includes(game.url));
-                renderGames();
-            });
-        } else {
-            aGames = [...games];
-            fGames = [...games];
-            renderGames();
-        }
+        aGames=[...games];
+        fGames=[...games];
+        renderGames();
+        games.forEach(async (game)=>{
+            try {
+                const url=await Lumin.getImageUrl(game.image_token);
+                game.icon=url;
+                const card=document.querySelector(`.gcard[data-name="${CSS.escape(game.name)}"]`);
+                if (card) {
+                    card.dataset.icon=url;
+                    if (card.dataset.loaded) {
+                        const gicon=card.querySelector('.gicon');
+                        gicon.innerHTML='';
+                        const img=document.createElement('img');
+                        img.alt=game.name;
+                        img.src=url;
+                        img.addEventListener('error',()=>{gicon.innerHTML=genFallback(game.name);});
+                        gicon.appendChild(img);
+                    }
+                }
+            } catch (e) {}
+        });
     } catch (error) {
-        console.error('failed to load games',error);
-        const cachedGames = localStorage.getItem('krypton_games_list');
+        console.error('failed to load lumin games',error);
+        const cachedGames=localStorage.getItem('krypton_games_list');
         if (cachedGames) {
-            console.log('loading games from cache!');
-            games=JSON.parse(cachedGames);
-            if (!navigator.onLine) {
-                checkGames().then(cachedUrls => {
-                    aGames = games.filter(game=>cachedUrls.includes(game.url));
-                    fGames = [...aGames];
-                    renderGames();
-                });
-            } else {
-                fGames = [...games];
-                renderGames();
-            }
-            fGames = [...games];
+            games = JSON.parse(cachedGames);
+            aGames=[...games];
+            fGames=[...games];
             renderGames();
         }
     }
@@ -86,7 +77,7 @@ function loadProvider(provider) {
     localStorage.setItem('krypton_provider',provider);
     games = [];fGames=[];aGames=[];
     const badge  = document.getElementById('provBadge');
-    if (badge) badge.textContent = provider==='ckv'?'CKV':provider==='hydra'?'Hydra':'gn-math';
+    if (badge) badge.textContent = provider==='ckv'?'CKV':provider==='hydra'?'Hydra':'Lumin';
     document.querySelectorAll('.prov-option').forEach(el => {
         el.classList.toggle('active',el.dataset.provider===provider);
     });
@@ -104,7 +95,7 @@ function initProvSel() {
     providerEl.innerHTML = `
     <div class="prov-btn" id="provBtn">
         <i data-lucide="layers"></i>
-        <span id="provBadge" class="prov-badge">${currProvider === 'ckv' ? 'CKV' : currProvider === 'hydra' ? 'Hydra' : 'gn-math'}</span>
+        <span id="provBadge" class="prov-badge">${currProvider === 'ckv' ? 'CKV' : currProvider === 'hydra' ? 'Hydra' : 'lumin'}</span>
         <i data-lucide="chevron-down" class="prov-chevron"></i>
     </div>
     <div class="prov-dropdown" id="provDropdown">
@@ -116,9 +107,9 @@ function initProvSel() {
             <span class="prov-dot"></span>
             Hydra
         </div>
-        <div class="prov-option ${currProvider === 'gnmath'?'active':''}" data-provider="gnmath">
+        <div class="prov-option ${currProvider === 'lumin'?'active':''}" data-provider="lumin">
             <span class="prov-dot"></span>
-            gn-math
+            Lumin
         </div>
     </div>`;
     wrapper.insertBefore(providerEl,searchBox);
@@ -264,6 +255,10 @@ async function openGame(game) {
         const frame = document.getElementById('zoneFrame');
         if (!frame) {
             console.error('zoneFrame not found');
+            return;
+        }
+        if (currProvider==='lumin') {
+            Lumin.loadGame(game.url);
             return;
         }
         frame.style.display = 'block';
