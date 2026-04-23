@@ -250,15 +250,15 @@ async function openGame(game) {
     console.log('zone frame',document.getElementById('zoneFrame'));
     console.log('close game',document.getElementById('closeGame'));
     try {
+        if (currProvider==='lumin') {
+            Lumin.loadGame(game.url);
+            return;
+        }
         const res = await fetch(game.url);
         const html = await res.text();
         const frame = document.getElementById('zoneFrame');
         if (!frame) {
             console.error('zoneFrame not found');
-            return;
-        }
-        if (currProvider==='lumin') {
-            Lumin.loadGame(game.url);
             return;
         }
         frame.style.display = 'block';
