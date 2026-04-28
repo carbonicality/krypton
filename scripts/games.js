@@ -228,7 +228,7 @@ async function checkGames() {
 
 function genFallback(name) {
     const initials = name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-    return `<div style="width:100%;height:100%;background:linear-gradient(180deg,#60a5fa,#93c5fd);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;color:white;text-shadow:0 2px 8px rgba(0,0,0,0.6);border-radius:inherit;letter-spacing:1px;">${initials}</div>`;
+    return `<div style="width:100%;height:100%;background:linear-gradient(180deg,#60a5fa,#93c5fd);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;color:white;text-shadow:0 2px 4px rgba(0,0,0,0.3)">${initials}</div>`;
 }
 
 function createGC(game) {
@@ -297,7 +297,7 @@ async function openGame(game) {
     } catch (err) {
         console.error('error fetching game',err);
         const frame = document.getElementById('zoneFrame');
-        if (frame || frame.style.display!=='block') {
+        if (!frame || frame.style.display!=='block') {
             frame.style.display='none';
             document.querySelector('.gametainer').style.display='block';
             document.getElementById('closeGame').style.display='none';
@@ -466,7 +466,7 @@ window.addEventListener('DOMContentLoaded',()=>{
         if (gametainer) {
             const offlineMsg = document.createElement('div');
             offlineMsg.className='offline-indicator';
-            offlineMsg.style.cssText = 'text-align:center;color:#94a3b8;font-size:14px;margin-top:16px;margin-bottom:16px;display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(239,68,68,0.08);padding:10px 16px;border-radius:10px;border:1px solid rgba(239,68,68,0.2);';
+            offlineMsg.style.cssText = 'text-align:center;color:#94a3b8;font-size:14px;margin-top:16px;margin-bottom:16px;display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(51,65,85,0.5);border-radius:8px;padding:12px';
             offlineMsg.innerHTML = '<i data-lucide="wifi-off" style="width=16px;height=16px;"></i> <span>you are offline - showing cached games only</span>';
             gametainer.insertBefore(offlineMsg,gametainer.firstChild);
             lucide.createIcons();
@@ -584,7 +584,7 @@ window.addEventListener('offline',()=>{
     if (gametainer && !document.querySelector('.offline-indicator')) {
         const offlineMsg = document.createElement('div');
         offlineMsg.className = 'offline-indicator';
-        offlineMsg.style.cssText = 'text-align:center;color:#94a3b8;font-size:14px;margin-top:16px;margin-bottom:16px;display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(239,68,68,0.08);padding:10px 16px;border-radius:10px;border:1px solid rgba(239,68,68,0.2);';
+        offlineMsg.style.cssText = 'text-align:center;color:#94a3b8;font-size:14px;margin-top:16px;margin-bottom:16px;display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(51,65,85,0.5);border-radius:8px;padding:12px';
         offlineMsg.innerHTML = '<i data-lucide="wifi-off" style="height=16px;width=16px;"></i> <span>you are offline - showing cached games only</span>';
         gametainer.insertBefore(offlineMsg, gametainer.firstChild);
         lucide.createIcons();
