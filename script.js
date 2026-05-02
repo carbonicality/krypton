@@ -2347,7 +2347,7 @@ document.getElementById('aiInput').addEventListener('input',function() {
     this.style.height=Math.min(this.scrollHeight,100)+'px';
 });
 
-//monetag smartlink popunder functionality
+//smartlink popunder functionality
 let lastPopunder=0;
 const POP_COOLDOWN=90000; //1.5mins
 
@@ -2357,7 +2357,7 @@ function triggerPopunder() {
     if (!adsEnabled) return;
     if (now-lastPopunder<POP_COOLDOWN) return;
     lastPopunder=now;
-    const popunder=window.open('https://omg10.com/4/10908547','_blank');
+    const popunder=window.open('https://www.profitablecpmratenetwork.com/t7be7h86j?key=5b352576681fed4809b4559c6840d372','_blank');
 }
 
 document.addEventListener('click',triggerPopunder,{capture:true});
