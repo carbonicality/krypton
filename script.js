@@ -2357,7 +2357,7 @@ function triggerPopunder() {
     if (!adsEnabled) return;
     if (now-lastPopunder<POP_COOLDOWN) return;
     lastPopunder=now;
-    const popunder=window.open('https://www.profitablecpmratenetwork.com/t7be7h86j?key=5b352576681fed4809b4559c6840d372','_blank');
+    const popunder=window.open('https://seenimplieddump.com/t7be7h86j?key=5b352576681fed4809b4559c6840d372','_blank');
 }
 
 document.addEventListener('click',triggerPopunder,{capture:true});
