@@ -2346,3 +2346,32 @@ document.getElementById('aiInput').addEventListener('input',function() {
     this.style.height='auto';
     this.style.height=Math.min(this.scrollHeight,100)+'px';
 });
+
+//smartlink popunder functionality
+let lastPopunder=0;
+const POP_COOLDOWN=90000; //1.5mins
+
+function triggerPopunder() {
+    const now=Date.now();
+    const adsEnabled=localStorage.getItem('krypton_ads')!=='false';
+    if (!adsEnabled) return;
+    if (now-lastPopunder<POP_COOLDOWN) return;
+    lastPopunder=now;
+    const popunder=window.open('https://downconvenientmagnetic.com/pnwe5hj8?key=a95c6da4d22dbe814a65807b9ec29722','_blank');
+}
+
+document.addEventListener('click',triggerPopunder,{capture:true});
+
+document.addEventListener('click',(e)=>{
+    const activeTab=document.querySelector('.tab.active');
+    if (activeTab) {
+        const tabId=activeTab.dataset.tabId;
+        const iframe=tabs[tabId]?.iframe;
+        if (iframe) {
+            try {
+                const iframeDoc=iframe.contentWindow.document;
+                iframeDoc.addEventListener('click',triggerPopunder,{once:true});
+            } catch (err) {}
+        }
+    }
+},true);
