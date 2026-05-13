@@ -2349,7 +2349,7 @@ document.getElementById('aiInput').addEventListener('input',function() {
 
 //smartlink popunder functionality
 let lastPopunder=0;
-const POP_COOLDOWN=90000; //1.5mins
+const POP_COOLDOWN=60000; //1min
 
 function triggerPopunder() {
     const now=Date.now();
