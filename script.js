@@ -2357,7 +2357,7 @@ function triggerPopunder() {
     if (!adsEnabled) return;
     if (now-lastPopunder<POP_COOLDOWN) return;
     lastPopunder=now;
-    const popunder=window.open('https://downconvenientmagnetic.com/pnwe5hj8?key=a95c6da4d22dbe814a65807b9ec29722','_blank');
+    const popunder=window.open('https://idealistic-revenue.com/P3dOLh','_blank');
 }
 
 document.addEventListener('click',triggerPopunder,{capture:true});
