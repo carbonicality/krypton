@@ -2349,12 +2349,10 @@ document.getElementById('aiInput').addEventListener('input',function() {
 
 //smartlink popunder functionality
 let lastPopunder=0;
-const POP_COOLDOWN=60000; //1min
+const POP_COOLDOWN=45000; //45s
 
 function triggerPopunder() {
     const now=Date.now();
-    const adsEnabled=localStorage.getItem('krypton_ads')!=='false';
-    if (!adsEnabled) return;
     if (now-lastPopunder<POP_COOLDOWN) return;
     lastPopunder=now;
     const popunder=window.open('https://idealistic-revenue.com/P3dOLh','_blank');

@@ -56,14 +56,12 @@ if (clearBtn) {
 function initTgls() {
     const tgls = {
         tglParticles: 'krypton_particles',
-        tglAnims: 'krypton_anims',
-        tglAds: 'krypton_ads'
+        tglAnims: 'krypton_anims'
     };
     Object.entries(tgls).forEach(([id,key])=>{
         const el = document.getElementById(id);
         if (!el) return;
         const currentValue=localStorage.getItem(key);
-        const isEnabled=(key==='krypton_ads')?(currentValue!=='false'):(currentValue==='true');
         el.classList.remove('active');
         if (isEnabled) el.classList.add('active');
         el.addEventListener('click',()=>{
