@@ -63,7 +63,6 @@ function initTgls() {
         if (!el) return;
         const currentValue=localStorage.getItem(key);
         el.classList.remove('active');
-        if (isEnabled) el.classList.add('active');
         el.addEventListener('click',()=>{
             el.classList.toggle('active');
             localStorage.setItem(key,el.classList.contains('active')?'true':'false');
