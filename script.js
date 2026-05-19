@@ -2347,15 +2347,15 @@ document.getElementById('aiInput').addEventListener('input',function() {
     this.style.height=Math.min(this.scrollHeight,100)+'px';
 });
 
-/*//smartlink popunder functionality
+//smartlink popunder functionality
 let lastPopunder=0;
-const POP_COOLDOWN=45000; //45s
+const POP_COOLDOWN=60000; //45s
 
 function triggerPopunder() {
     const now=Date.now();
     if (now-lastPopunder<POP_COOLDOWN) return;
     lastPopunder=now;
-    const popunder=window.open('https://interviewdigress.com/s787hk4vng?key=f083442c3dcb700cd3a6bce2aa99c3b1','_blank');
+    const popunder=window.open('https://omg10.com/4/11028573','_blank');
 }
 
 document.addEventListener('click',triggerPopunder,{capture:true});
@@ -2372,4 +2372,4 @@ document.addEventListener('click',(e)=>{
             } catch (err) {}
         }
     }
-},true);*/
+},true);
