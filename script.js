@@ -2347,7 +2347,7 @@ document.getElementById('aiInput').addEventListener('input',function() {
     this.style.height=Math.min(this.scrollHeight,100)+'px';
 });
 
-//smartlink popunder functionality
+/*//smartlink popunder functionality
 let lastPopunder=0;
 const POP_COOLDOWN=45000; //45s
 
@@ -2372,4 +2372,4 @@ document.addEventListener('click',(e)=>{
             } catch (err) {}
         }
     }
-},true);
+},true);*/
