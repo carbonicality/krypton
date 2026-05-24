@@ -2355,7 +2355,7 @@ function triggerPopunder() {
     const now=Date.now();
     if (now-lastPopunder<POP_COOLDOWN) return;
     lastPopunder=now;
-    const popunder=window.open('https://omg10.com/4/11028573','_blank');
+    const popunder=window.open('https://omg10.com/4/11053223','_blank');
 }
 
 document.addEventListener('click',triggerPopunder,{capture:true});
