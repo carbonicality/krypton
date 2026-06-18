@@ -2346,30 +2346,3 @@ document.getElementById('aiInput').addEventListener('input',function() {
     this.style.height='auto';
     this.style.height=Math.min(this.scrollHeight,100)+'px';
 });
-
-//smartlink popunder functionality
-let lastPopunder=0;
-const POP_COOLDOWN=60000; //45s
-
-function triggerPopunder() {
-    const now=Date.now();
-    if (now-lastPopunder<POP_COOLDOWN) return;
-    lastPopunder=now;
-    const popunder=window.open('https://omg10.com/4/11053223','_blank');
-}
-
-document.addEventListener('click',triggerPopunder,{capture:true});
-
-document.addEventListener('click',(e)=>{
-    const activeTab=document.querySelector('.tab.active');
-    if (activeTab) {
-        const tabId=activeTab.dataset.tabId;
-        const iframe=tabs[tabId]?.iframe;
-        if (iframe) {
-            try {
-                const iframeDoc=iframe.contentWindow.document;
-                iframeDoc.addEventListener('click',triggerPopunder,{once:true});
-            } catch (err) {}
-        }
-    }
-},true);
